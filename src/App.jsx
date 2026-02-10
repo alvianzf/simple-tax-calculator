@@ -2,15 +2,14 @@ import { useState, useEffect } from 'react'
 import Header from './components/Header'
 import TaxForm from './components/TaxForm'
 import ResultCard from './components/ResultCard'
-import { calculateMonthlyTax, calculateGrossUp, calculateIncomeFromTax } from './utils/calculator'
+import { calculateRealMonthlyTax, calculateTER } from './utils/calculator'
 import './App.css'
 
 function App() {
-  const [mode, setMode] = useState('monthly') // 'monthly', 'net-gross', 'tax-gross'
+  const [method, setMethod] = useState('real') // 'real' (True Cost) vs 'ter' (Payroll)
   const [status, setStatus] = useState('TK/0')
   const [incomeDisplay, setIncomeDisplay] = useState('')
   const [result, setResult] = useState(null)
-  const [gross, setGross] = useState(0)
 
   useEffect(() => {
     // 1. Parse Income
@@ -21,41 +20,26 @@ function App() {
       return
     }
 
-    // 2. Calculate based on mode
-    let res = { tax: 0, rate: 0 }
-    let calculatedGross = incomeValue
+    // 2. Calculate based on Method
+    let res = null
 
-    if (mode === 'monthly') {
-      res = calculateMonthlyTax(incomeValue, status)
-      calculatedGross = incomeValue
-    } else if (mode === 'net-gross') {
-      const grossUp = calculateGrossUp(incomeValue, status)
-      res = { tax: grossUp.tax, rate: grossUp.rate }
-      calculatedGross = grossUp.gross
-    } else if (mode === 'tax-gross') {
-      const taxToGross = calculateIncomeFromTax(incomeValue, status)
-      res = { tax: taxToGross.tax, rate: taxToGross.rate }
-      calculatedGross = taxToGross.gross
+    if (method === 'real') {
+      res = calculateRealMonthlyTax(incomeValue, status)
+    } else {
+      res = calculateTER(incomeValue, status)
     }
 
-    // 3. Update Result State
+    // 3. Update Result
     setResult(res)
-    setGross(calculatedGross)
 
-  }, [incomeDisplay, status, mode])
-
-  // Reset input when mode changes (optional, but cleaner)
-  useEffect(() => {
-    setIncomeDisplay('')
-    setResult(null)
-  }, [mode])
+  }, [incomeDisplay, status, method])
 
   return (
     <div className="container">
       <Header />
       <TaxForm
-        mode={mode}
-        setMode={setMode}
+        method={method}
+        setMethod={setMethod}
         incomeDisplay={incomeDisplay}
         setIncomeDisplay={setIncomeDisplay}
         status={status}
@@ -64,9 +48,7 @@ function App() {
 
       <ResultCard
         result={result}
-        mode={mode}
-        gross={gross}
-        incomeValue={parseInt(incomeDisplay.replace(/\./g, '') || '0', 10)}
+        mode={method}
       />
     </div>
   )
