@@ -71,6 +71,52 @@ export function calculateRealMonthlyTax(grossMonthly, status) {
     };
 }
 
+// --- REVERSE: Tax -> Income ---
+export function calculateGrossFromAnnualTax(targetTax, status) {
+    if (targetTax <= 0) {
+        return {
+            annualGross: 0, // Or PTKP limit? Technically 0 tax means <= PTKP. We'll return 0 for simplicity.
+            monthlyGross: 0,
+            pkp: 0,
+            ptkp: PTKP[status] || PTKP['TK/0']
+        };
+    }
+
+    let remainingTax = targetTax;
+    let calculatedPKP = 0;
+
+    for (const tier of ARTICLE_17_RATES) {
+        if (remainingTax <= 0) break;
+
+        const previousLimit = ARTICLE_17_RATES[ARTICLE_17_RATES.indexOf(tier) - 1]?.limit || 0;
+        const currentLimit = tier.limit === Infinity ? Infinity : tier.limit;
+        const bracketSize = currentLimit - previousLimit;
+        
+        const maxTaxForBracket = bracketSize === Infinity ? Infinity : Math.floor(bracketSize * tier.rate);
+
+        if (remainingTax <= maxTaxForBracket) {
+            // Fits in this bracket
+            calculatedPKP += remainingTax / tier.rate;
+            remainingTax = 0;
+        } else {
+            // Fills this bracket
+            calculatedPKP += bracketSize;
+            remainingTax -= maxTaxForBracket;
+        }
+    }
+
+    const ptkp = PTKP[status] || PTKP['TK/0'];
+    const annualGross = calculatedPKP + ptkp;
+    const monthlyGross = Math.floor(annualGross / 12);
+
+    return {
+        annualGross: Math.floor(annualGross),
+        monthlyGross: monthlyGross,
+        pkp: Math.floor(calculatedPKP),
+        ptkp: ptkp
+    };
+}
+
 // --- LEGACY/COMPARISON: TER Method ---
 export function calculateTER(grossIncome, status) {
     const category = STATUS_CATEGORY_MAP[status];
