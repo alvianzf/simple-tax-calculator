@@ -139,6 +139,27 @@ select:focus {
   animation: fadeIn 0.5s ease-out;
 }
 
+.result-grid-3,
+.result-grid-2 {
+  display: grid;
+  gap: 1rem;
+}
+
+.result-grid-3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.result-grid-2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.breakdown-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
 .result-label {
   color: var(--text-secondary);
   font-size: 0.9rem;
@@ -320,5 +341,12 @@ select:focus {
   label {
     font-size: 0.8rem;
     margin-bottom: 0.35rem;
+  }
+
+  .result-grid-3,
+  .result-grid-2,
+  .breakdown-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem;
   }
 }

@@ -185,7 +185,7 @@ const ResultCard = ({ result, mode, inputTax, thrInput = 0, bonusInput = 0 }) =>
       {isTER ? (
         // TER Mode: Show Gross, Tax, Net breakdown
         <>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div className="result-grid-3" style={{ marginBottom: '1.5rem' }}>
             <div style={{ background: 'var(--bg-input)', padding: '1rem', borderRadius: '0.75rem', textAlign: 'center' }}>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>
                 <Calendar size={14} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle' }} />
@@ -229,7 +229,7 @@ const ResultCard = ({ result, mode, inputTax, thrInput = 0, bonusInput = 0 }) =>
               {result.thrGross > 0 && (
                 <div style={{ marginBottom: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px dashed var(--border-color)' }}>
                   <div style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>THR (Tunjangan Hari Raya)</div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem', fontSize: '0.85rem' }}>
+                  <div className="breakdown-grid">
                     <div>
                       <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>Gross</div>
                       <div style={{ fontWeight: 600 }}>{formatCurrency(result.thrGross)}</div>
@@ -249,7 +249,7 @@ const ResultCard = ({ result, mode, inputTax, thrInput = 0, bonusInput = 0 }) =>
               {result.bonusGross > 0 && (
                 <div style={{ marginBottom: '0.5rem' }}>
                   <div style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Yearly Bonus</div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem', fontSize: '0.85rem' }}>
+                  <div className="breakdown-grid">
                     <div>
                       <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>Gross</div>
                       <div style={{ fontWeight: 600 }}>{formatCurrency(result.bonusGross)}</div>
@@ -275,7 +275,7 @@ const ResultCard = ({ result, mode, inputTax, thrInput = 0, bonusInput = 0 }) =>
       ) : (
         // Real Cost and Reverse Mode: Show Monthly/Annual
         <>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div className="result-grid-2" style={{ marginBottom: '1.5rem' }}>
             <div style={{ background: 'var(--bg-input)', padding: '1rem', borderRadius: '0.75rem', textAlign: 'center' }}>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>
                 <Calendar size={14} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle' }} />
