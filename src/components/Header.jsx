@@ -1,5 +1,5 @@
 import React from 'react';
-import { Palmtree } from 'lucide-react';
+import { Palmtree, Droplets } from 'lucide-react';
 
 const Header = () => {
   return (
@@ -11,7 +11,7 @@ const Header = () => {
           <span style={{ color: 'white' }}>Tax</span>
           <span style={{ color: 'var(--brand-red)' }}>.</span>
         </h1>
-        <Palmtree size={48} style={{ color: '#22c55e', opacity: 0.9 }} />
+        <Droplets size={48} style={{ color: '#38bdf8', opacity: 0.9 }} />
       </div>
       <p className="subtitle">Calculate your contribution to the nation.</p>
     </header>

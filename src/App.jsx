@@ -71,6 +71,8 @@ function App() {
         result={result}
         mode={method}
         inputTax={parseInt(incomeDisplay.replace(/\./g, '') || '0', 10)}
+        thrInput={parseInt(thrDisplay.replace(/\./g, '') || '0', 10)}
+        bonusInput={parseInt(bonusDisplay.replace(/\./g, '') || '0', 10)}
       />
 
       <Footer />

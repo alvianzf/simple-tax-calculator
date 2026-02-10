@@ -3,7 +3,7 @@ import { getSarcasticComment, formatCurrency } from '../utils/calculator';
 import { NO_THR_NO_BONUS_COMMENTS, NO_BONUS_COMMENTS } from '../utils/tax-data';
 import { ChevronDown, ChevronUp, Calendar, Percent } from 'lucide-react';
 
-const ResultCard = ({ result, mode, inputTax }) => {
+const ResultCard = ({ result, mode, inputTax, thrInput = 0, bonusInput = 0 }) => {
   if (!result) return null;
   const [showDetails, setShowDetails] = useState(false);
 
@@ -33,45 +33,111 @@ const ResultCard = ({ result, mode, inputTax }) => {
 
   const hasLayers = result.layers && result.layers.length > 0;
 
-  // Visual Comparison Logic
+  // Visual Comparison Logic — brackets match sarcastic comment thresholds
+  const COMPARISONS = [
+    { max: 0, items: [{ item: "Absolutely Nothing", icon: "🎉", desc: "The government doesn't even want your money.", isZero: true }], color: "#22c55e" },
+    {
+      max: 50000, items: [
+        { item: "10 Packs of Indomie", icon: "🍜", desc: "Gourmet student dining for a week." },
+        { item: "A Grab Ride Across Town", icon: "🛵", desc: "One way. No return. Just like your money." }
+      ], color: "#a3e635"
+    },
+    {
+      max: 150000, items: [
+        { item: "A Fancy Nasi Padang Lunch", icon: "🍛", desc: "Extra rendang, extra sambal, extra pain." },
+        { item: "3 Boba Drinks", icon: "🧋", desc: "Large, extra pearls, no sweetness left in life." }
+      ], color: "#84cc16"
+    },
+    {
+      max: 300000, items: [
+        { item: "A Month of Spotify Premium", icon: "🎵", desc: "Soundtrack for your financial sorrow." },
+        { item: "10 Liters of Pertamax", icon: "⛽", desc: "Enough to drive to the tax office and cry." }
+      ], color: "#facc15"
+    },
+    {
+      max: 500000, items: [
+        { item: "50 Cups of Instant Coffee", icon: "☕", desc: "Caffeine addiction, fully funded." },
+        { item: "A Decent Pair of Sneakers", icon: "👟", desc: "For running away from your tax obligations." }
+      ], color: "#fbbf24"
+    },
+    {
+      max: 1000000, items: [
+        { item: "1 Year of Netflix Premium", icon: "🎬", desc: "Binge-watching taken away from you." },
+        { item: "A Nice Dinner for Two", icon: "🍽️", desc: "Romantic evening, funded by the state now." }
+      ], color: "#fb923c"
+    },
+    {
+      max: 2000000, items: [
+        { item: "Monthly Gym Membership", icon: "💪", desc: "Getting ripped while your wallet gets stripped." },
+        { item: "A Weekend Getaway to Bandung", icon: "🏔️", desc: "Fresh air, fresh tears." }
+      ], color: "#f97316"
+    },
+    {
+      max: 3500000, items: [
+        { item: "A Budget Tablet", icon: "📱", desc: "A decent Android, gone every month." },
+        { item: "3 Months of Coworking Space", icon: "💻", desc: "Working hard so the government doesn't have to." }
+      ], color: "#ef4444"
+    },
+    {
+      max: 5000000, items: [
+        { item: "A Mid-Range Smartphone", icon: "📱", desc: "Flagship dreams, budget reality." },
+        { item: "A Round-Trip Flight to Bali", icon: "✈️", desc: "Vacation mode: cancelled by taxation." }
+      ], color: "#e50914"
+    },
+    {
+      max: 7500000, items: [
+        { item: "A Gaming Console", icon: "🎮", desc: "Game over for your savings." },
+        { item: "A Home Appliance Set", icon: "🏠", desc: "Washing machine AND dryer. Gone." }
+      ], color: "#dc2626"
+    },
+    {
+      max: 10000000, items: [
+        { item: "A Designer Handbag", icon: "👜", desc: "Fashion week? No, tax week." },
+        { item: "A Premium Watch", icon: "⌚", desc: "Time is money. You just ran out of both." }
+      ], color: "#ec4899"
+    },
+    {
+      max: 15000000, items: [
+        { item: "A High-End Laptop", icon: "💻", desc: "MacBook money, Chromebook life." },
+        { item: "A Semester of Private Uni", icon: "🎓", desc: "Education: priceless. Your tax: very priced." }
+      ], color: "#a855f7"
+    },
+    {
+      max: 25000000, items: [
+        { item: "A New iPhone", icon: "📱", desc: "Pro Max Ultra money. Gone Ultra Fast." },
+        { item: "A Used Motor Gede", icon: "🏍️", desc: "Big bike energy, empty wallet vibes." }
+      ], color: "#8b5cf6"
+    },
+    {
+      max: 40000000, items: [
+        { item: "A Down Payment on a House", icon: "🏡", desc: "Homeownership dreams, government funded." },
+        { item: "A Business Class Flight to Tokyo", icon: "✈️", desc: "First class tax, economy class life." }
+      ], color: "#6366f1"
+    },
+    {
+      max: 60000000, items: [
+        { item: "A Used Japanese Car", icon: "🚗", desc: "Vroom vroom... straight to the treasury." },
+        { item: "A Full Home Renovation", icon: "🔨", desc: "New kitchen, new bathroom. For someone else." }
+      ], color: "#64748b"
+    },
+    {
+      max: Infinity, items: [
+        { item: "A Brand New Car", icon: "🚙", desc: "Off the showroom, into the government." },
+        { item: "A Year of Luxury Living", icon: "🏰", desc: "Castle vibes. Tax bill reality." }
+      ], color: "#475569"
+    }
+  ];
+
   const getComparison = (taxAmount) => {
-    if (taxAmount <= 0) return {
-      item: "Absolutely Nothing",
-      color: "#22c55e",
-      icon: "🎉",
-      desc: "The government doesn't even want your money. Enjoy it while it lasts.",
-      isZero: true
-    };
-    if (taxAmount < 500000) return {
-      item: "50 Cups of Instant Coffee",
-      color: "#fbbf24",
-      icon: "☕",
-      desc: "Caffeine addiction, fully funded."
-    };
-    if (taxAmount < 2000000) return {
-      item: "1 Year of Netflix Premium",
-      color: "#e50914",
-      icon: "🎬",
-      desc: "Binge-watching taken away from you."
-    };
-    if (taxAmount < 5000000) return {
-      item: "A Mid-Range Smartphone",
-      color: "#3b82f6",
-      icon: "📱",
-      desc: "A decent Android, gone every month."
-    };
-    if (taxAmount < 10000000) return {
-      item: "A Designer Handbag",
-      color: "#ec4899",
-      icon: "👜",
-      desc: "Fashion week? No, tax week."
-    };
-    return {
-      item: "A Used Japanese Car",
-      color: "#64748b",
-      icon: "🚗",
-      desc: "Vroom vroom... straight to the treasury."
-    };
+    for (const bracket of COMPARISONS) {
+      if (taxAmount <= bracket.max) {
+        const pick = bracket.items[Math.floor(Math.random() * bracket.items.length)];
+        return { ...pick, color: bracket.color };
+      }
+    }
+    const last = COMPARISONS[COMPARISONS.length - 1];
+    const pick = last.items[Math.floor(Math.random() * last.items.length)];
+    return { ...pick, color: last.color };
   };
 
   const comparison = getComparison(taxForSarcasm);
@@ -247,8 +313,8 @@ const ResultCard = ({ result, mode, inputTax }) => {
         <p>"{sarcasticComment}"</p>
       </div>
 
-      {/* No THR/Bonus remarks */}
-      {mode === 'real' && result.bonus !== undefined && result.bonus === 0 && (
+      {/* No THR/Bonus remarks — works on all modes with THR/Bonus fields */}
+      {mode !== 'reverse' && thrInput === 0 && bonusInput === 0 && (
         <div className="sarcastic-box" style={{ marginTop: '1rem', borderColor: '#f59e0b', background: 'rgba(245, 158, 11, 0.05)' }}>
           <p style={{ color: '#f59e0b', fontSize: '0.9rem' }}>
             💸 "{NO_THR_NO_BONUS_COMMENTS[Math.floor(Math.random() * NO_THR_NO_BONUS_COMMENTS.length)]}"
@@ -256,15 +322,7 @@ const ResultCard = ({ result, mode, inputTax }) => {
         </div>
       )}
 
-      {mode === 'ter' && result.thrGross === 0 && result.bonusGross === 0 && (
-        <div className="sarcastic-box" style={{ marginTop: '1rem', borderColor: '#f59e0b', background: 'rgba(245, 158, 11, 0.05)' }}>
-          <p style={{ color: '#f59e0b', fontSize: '0.9rem' }}>
-            💸 "{NO_THR_NO_BONUS_COMMENTS[Math.floor(Math.random() * NO_THR_NO_BONUS_COMMENTS.length)]}"
-          </p>
-        </div>
-      )}
-
-      {mode === 'ter' && result.thrGross > 0 && result.bonusGross === 0 && (
+      {mode !== 'reverse' && thrInput > 0 && bonusInput === 0 && (
         <div className="sarcastic-box" style={{ marginTop: '1rem', borderColor: '#f59e0b', background: 'rgba(245, 158, 11, 0.05)' }}>
           <p style={{ color: '#f59e0b', fontSize: '0.9rem' }}>
             💸 "{NO_BONUS_COMMENTS[Math.floor(Math.random() * NO_BONUS_COMMENTS.length)]}"
