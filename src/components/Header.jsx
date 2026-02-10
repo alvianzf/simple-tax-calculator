@@ -4,7 +4,7 @@ import { Palmtree, Waves } from 'lucide-react';
 const Header = () => {
   return (
     <header>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
         <div className="header-icons" style={{ display: 'flex', alignItems: 'flex-end', gap: '0' }}>
           <Palmtree size={40} style={{ color: '#22c55e', opacity: 0.9 }} />
           <Palmtree size={120} style={{ color: '#22c55e', opacity: 0.9 }} />
