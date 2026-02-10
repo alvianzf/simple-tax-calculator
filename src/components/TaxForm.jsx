@@ -1,18 +1,16 @@
 import React from 'react';
 
 const TaxForm = ({
-  mode, setMode,
+  method, setMethod,
   incomeDisplay, setIncomeDisplay,
   status, setStatus
 }) => {
 
   const handleIncomeChange = (e) => {
-    // Remove non-digits
     let val = e.target.value.replace(/\D/g, '');
     if (val === '') {
       setIncomeDisplay('');
     } else {
-      // Store as formatted string in display
       const num = parseInt(val, 10);
       setIncomeDisplay(new Intl.NumberFormat('id-ID').format(num));
     }
@@ -20,35 +18,27 @@ const TaxForm = ({
 
   return (
     <div className="card">
-      {/* Calculation Mode Switch */}
+      {/* Method Switch: Real Cost vs TER */}
       <div className="switch-group">
         <button
-          className={`switch-btn ${mode === 'monthly' ? 'active' : ''}`}
-          onClick={() => setMode('monthly')}
+          className={`switch-btn ${method === 'real' ? 'active' : ''}`}
+          onClick={() => setMethod('real')}
         >
-          Monthly Gross
+          True Cost
+          <span style={{ display: 'block', fontSize: '0.7em', opacity: 0.8 }}>(Annualized)</span>
         </button>
         <button
-          className={`switch-btn ${mode === 'net-gross' ? 'active' : ''}`}
-          onClick={() => setMode('net-gross')}
+          className={`switch-btn ${method === 'ter' ? 'active' : ''}`}
+          onClick={() => setMethod('ter')}
         >
-          Net to Gross
-        </button>
-        <button
-          className={`switch-btn ${mode === 'tax-gross' ? 'active' : ''}`}
-          onClick={() => setMode('tax-gross')}
-        >
-          Tax to Gross
+          Payroll Slip
+          <span style={{ display: 'block', fontSize: '0.7em', opacity: 0.8 }}>(TER 2024)</span>
         </button>
       </div>
 
       <div id="calculator-form">
         <div className="form-group">
-          <label>
-            {mode === 'monthly' && 'Monthly Gross Income'}
-            {mode === 'net-gross' && 'Desired Monthly Net Income'}
-            {mode === 'tax-gross' && 'Monthly Tax Amount'}
-          </label>
+          <label>Monthly Gross Income</label>
           <div className="input-wrapper">
             <span className="currency-symbol">Rp</span>
             <input
@@ -65,6 +55,7 @@ const TaxForm = ({
           <div className="form-group">
             <label>Marital Status</label>
             <select value={status} onChange={(e) => setStatus(e.target.value)}>
+              {/* Standard TK/0 to K/3 */}
               <option value="TK/0">TK/0 (Single, 0 Dep)</option>
               <option value="TK/1">TK/1 (Single, 1 Dep)</option>
               <option value="TK/2">TK/2 (Single, 2 Dep)</option>
