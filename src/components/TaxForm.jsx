@@ -3,22 +3,23 @@ import React from 'react';
 const TaxForm = ({
   method, setMethod,
   incomeDisplay, setIncomeDisplay,
+  bonusDisplay, setBonusDisplay,
   status, setStatus
 }) => {
 
-  const handleIncomeChange = (e) => {
+  const handleNumberChange = (setter) => (e) => {
     let val = e.target.value.replace(/\D/g, '');
     if (val === '') {
-      setIncomeDisplay('');
+      setter('');
     } else {
       const num = parseInt(val, 10);
-      setIncomeDisplay(new Intl.NumberFormat('id-ID').format(num));
+      setter(new Intl.NumberFormat('id-ID').format(num));
     }
   };
 
   return (
     <div className="card">
-      {/* Method Switch: Real Cost vs TER vs Reverse */}
+      {/* Method Switch */}
       <div className="switch-group">
         <button
           className={`switch-btn ${method === 'real' ? 'active' : ''}`}
@@ -54,11 +55,28 @@ const TaxForm = ({
               type="text"
               placeholder="0"
               value={incomeDisplay}
-              onChange={handleIncomeChange}
+              onChange={handleNumberChange(setIncomeDisplay)}
               autoComplete="off"
             />
           </div>
         </div>
+
+        {/* Bonus Input (Only for True Cost) */}
+        {method === 'real' && (
+          <div className="form-group" style={{ animation: 'fadeIn 0.5s' }}>
+            <label>Yearly Bonus / THR (Optional)</label>
+            <div className="input-wrapper">
+              <span className="currency-symbol">Rp</span>
+              <input
+                type="text"
+                placeholder="0"
+                value={bonusDisplay}
+                onChange={handleNumberChange(setBonusDisplay)}
+                autoComplete="off"
+              />
+            </div>
+          </div>
+        )}
 
         <div className="options-grid">
           <div className="form-group">
