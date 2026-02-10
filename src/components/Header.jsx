@@ -1,10 +1,15 @@
 import React from 'react';
+import { Sprout } from 'lucide-react';
 
 const Header = () => {
   return (
     <header>
-      <h1>Simple Tax<span>.</span></h1>
-      <p class="subtitle">Calculate your contribution to the nation</p>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
+        <Sprout size={48} style={{ color: 'var(--brand-red)', opacity: 0.8 }} />
+        <h1>Simple Tax<span>.</span></h1>
+        <Sprout size={48} style={{ color: 'var(--brand-red)', opacity: 0.8 }} />
+      </div>
+      <p className="subtitle">Calculate your contribution to the nation (sadly).</p>
     </header>
   );
 };
