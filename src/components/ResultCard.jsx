@@ -38,33 +38,33 @@ const ResultCard = ({ result, mode, inputTax }) => {
     if (taxAmount <= 0) return null;
     if (taxAmount < 500000) return {
       item: "50 Cups of Instant Coffee",
-      image: "/tax_compare_coffee_1770714977875.png", // Use generated image
       color: "#fbbf24",
-      icon: "☕"
+      icon: "☕",
+      desc: "Caffeine addiction, fully funded."
     };
     if (taxAmount < 2000000) return {
       item: "1 Year of Netflix Premium",
-      image: null,
       color: "#e50914",
-      icon: "🎬"
+      icon: "🎬",
+      desc: "Binge-watching taken away from you."
     };
     if (taxAmount < 5000000) return {
       item: "A Mid-Range Smartphone",
-      image: null,
       color: "#3b82f6",
-      icon: "📱"
+      icon: "📱",
+      desc: "A decent Android, gone every month."
     };
     if (taxAmount < 10000000) return {
       item: "A Designer Handbag",
-      image: null,
       color: "#ec4899",
-      icon: "👜"
+      icon: "👜",
+      desc: "Fashion week? No, tax week."
     };
     return {
       item: "A Used Japanese Car",
-      image: null,
       color: "#64748b",
-      icon: "🚗"
+      icon: "🚗",
+      desc: "Vroom vroom... straight to the treasury."
     };
   };
 
@@ -80,35 +80,30 @@ const ResultCard = ({ result, mode, inputTax }) => {
           overflow: 'hidden',
           border: '1px solid var(--border-color)',
           display: 'flex',
-          flexDirection: 'column' // Mobile first
+          flexDirection: 'column'
         }}>
           <div style={{
             background: comparison.color,
             padding: '0.75rem',
             color: 'white',
-            fontWeight: 600,
-            fontSize: '0.9rem',
+            fontWeight: 800,
+            fontSize: '1.1rem',
             textAlign: 'center',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '0.5rem'
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em'
           }}>
-            <span>Your Monthly Tax is equivalent to...</span>
+            You could afford these...
           </div>
-          <div style={{ padding: '1.5rem', textAlign: 'center', background: 'var(--bg-input)' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>{comparison.icon}</div>
-            <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>
+          <div style={{ padding: '2rem 1.5rem', textAlign: 'center', background: 'var(--bg-input)' }}>
+            <div style={{ fontSize: '4.5rem', marginBottom: '1rem', lineHeight: 1 }}>{comparison.icon}</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.5rem', lineHeight: 1.2 }}>
               {comparison.item}
             </div>
-            {/* Placeholder for image if we had more */}
-            {comparison.image && (
-              <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
-                (Imagine this pile on your desk)
-              </div>
-            )}
-            <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              Every single month. Gone.
+            <div style={{ fontSize: '1rem', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+              "{comparison.desc}"
+            </div>
+            <div style={{ marginTop: '1.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)', opacity: 0.8 }}>
+              But you paid taxes instead.
             </div>
           </div>
         </div>
