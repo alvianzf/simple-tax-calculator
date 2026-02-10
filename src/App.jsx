@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import Header from './components/Header'
 import TaxForm from './components/TaxForm'
 import ResultCard from './components/ResultCard'
-import { calculateRealMonthlyTax, calculateTER, calculateGrossFromAnnualTax } from './utils/calculator'
+import { calculateRealMonthlyTax, calculateTER, calculateGrossFromNet, calculateGrossFromAnnualTax } from './utils/calculator'
 import './App.css'
 
 function App() {
@@ -32,8 +32,11 @@ function App() {
       // Input: Monthly Gross + Total Bonus (THR + Yearly Bonus)
       res = calculateRealMonthlyTax(inputValue, status, totalBonus)
     } else if (method === 'ter') {
-      // Input: Monthly Gross (TER ignores annual bonus)
-      res = calculateTER(inputValue, status)
+      // Input: Monthly NET Income (Take-Home)
+      // Calculate gross from net using TER reverse calculation
+      res = calculateGrossFromNet(inputValue, status, thrValue, bonusValue)
+      // Mark this as TER mode for ResultCard
+      res.isTERMode = true
     } else if (method === 'reverse') {
       // Input: Desired Monthly Tax
       if (inputValue > 0) {
