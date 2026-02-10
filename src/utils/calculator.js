@@ -8,11 +8,6 @@ import {
 
 // --- CORE: The "True Cost" Calculation (Annualized / 12) ---
 
-/**
- * Calculates the 'Real' Monthly Tax based on Annualized Income
- * Method: ((Monthly * 12) - PTKP) * Article 17 Rates / 12
- * This shows the actual tax burden, smoothing out the TER variations.
- */
 export function calculateRealMonthlyTax(grossMonthly, status) {
     // 1. Annualize
     const annualGross = grossMonthly * 12;
@@ -21,10 +16,9 @@ export function calculateRealMonthlyTax(grossMonthly, status) {
     const ptkpAmount = PTKP[status] || PTKP['TK/0'];
 
     // 3. Taxable Income (PKP)
-    // Round down to thousands usually, but standard simple calc is direct subtraction
     let pkp = annualGross - ptkpAmount;
     
-    // Floor to thousands for official regulation alignment
+    // Floor to thousands
     pkp = Math.floor(pkp / 1000) * 1000;
 
     if (pkp <= 0) {
@@ -32,13 +26,17 @@ export function calculateRealMonthlyTax(grossMonthly, status) {
             taxAnnual: 0, 
             taxMonthly: 0, 
             pkp: 0, 
-            rateEffective: 0 
+            ptkp: ptkpAmount,
+            annualGross: annualGross,
+            rateEffective: 0,
+            layers: []
         };
     }
 
     // 4. Apply Progressive Rates (Pasal 17)
     let remainingPkp = pkp;
     let totalTax = 0;
+    const layers = [];
 
     for (const tier of ARTICLE_17_RATES) {
         if (remainingPkp <= 0) break;
@@ -48,19 +46,28 @@ export function calculateRealMonthlyTax(grossMonthly, status) {
         const currentBracketSize = currentLimit - previousLimit;
         
         const taxableInThisBracket = Math.min(remainingPkp, currentBracketSize);
-        totalTax += taxableInThisBracket * tier.rate;
+        const taxForThisBracket = Math.floor(taxableInThisBracket * tier.rate);
         
+        totalTax += taxForThisBracket;
         remainingPkp -= taxableInThisBracket;
+
+        layers.push({
+            rate: tier.rate,
+            amount: taxableInThisBracket,
+            tax: taxForThisBracket
+        });
     }
 
-    totalTax = Math.floor(totalTax);
     const taxMonthly = Math.floor(totalTax / 12);
 
     return {
         taxAnnual: totalTax,
         taxMonthly: taxMonthly,
         pkp: pkp,
-        rateEffective: totalTax / annualGross 
+        ptkp: ptkpAmount,
+        annualGross: annualGross,
+        rateEffective: totalTax / annualGross,
+        layers: layers
     };
 }
 
@@ -83,7 +90,6 @@ export function calculateTER(grossIncome, status) {
 // --- UTILS ---
 
 export function getSarcasticComment(taxMonthly) {
-    // Re-calibrated thresholds for Monthly Tax amounts
     if (taxMonthly <= 0) return SARCASTIC_COMMENTS[0].text;
     const comment = SARCASTIC_COMMENTS.find(c => taxMonthly <= c.threshold) || SARCASTIC_COMMENTS[SARCASTIC_COMMENTS.length - 1];
     return comment.text;
