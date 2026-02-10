@@ -158,7 +158,10 @@ export function calculateTER(grossIncome, status) {
 // --- UTILS ---
 
 export function getSarcasticComment(taxMonthly) {
-    if (taxMonthly <= 0) return SARCASTIC_COMMENTS[0].text;
+    if (taxMonthly <= 0) {
+        const zeroVariations = SARCASTIC_COMMENTS[0].variations;
+        return zeroVariations[Math.floor(Math.random() * zeroVariations.length)];
+    }
     
     // Sort logic to be safe if array is unsorted
     const sortedComments = [...SARCASTIC_COMMENTS].sort((a, b) => a.threshold - b.threshold);
@@ -167,22 +170,17 @@ export function getSarcasticComment(taxMonthly) {
     let selected = sortedComments[0];
     for (const c of sortedComments) {
         if (taxMonthly > c.threshold) { 
-            // Keep going up
-        } else {
             selected = c;
-            break; 
+        } else {
+            break;
         }
-        // Correct logic: we want the comment for the range.
-        // e.g. Tax 100k -> Matches threshold 150000? Or previous?
-        // Let's use simpler logic: Find first threshold >= tax
     }
     
-    // Re-do find logic:
-    // Find result where tax <= threshold.
-    const match = sortedComments.find(c => taxMonthly <= c.threshold);
+    // Randomly select one variation from the selected bracket
+    const variations = selected.variations;
+    const randomIndex = Math.floor(Math.random() * variations.length);
     
-    // If tax is huge and exceeds all thresholds, take the last one
-    return match ? match.text : sortedComments[sortedComments.length - 1].text;
+    return variations[randomIndex];
 }
 
 export function formatCurrency(amount) {
