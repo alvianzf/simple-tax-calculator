@@ -10,14 +10,16 @@ const ResultCard = ({ result, mode, inputTax }) => {
   let annual = 0;
   let rate = 0;
   let isReverse = mode === 'reverse';
+  let isTER = mode === 'ter';
 
   if (mode === 'real') {
     monthly = result.taxMonthly;
     annual = result.taxAnnual;
     rate = result.rateEffective;
   } else if (mode === 'ter') {
-    monthly = result.tax;
-    annual = result.tax * 12;
+    // TER mode shows gross income (not tax)
+    monthly = result.grossMonthly;
+    annual = result.grossMonthly * 12;
     rate = result.rate;
   } else if (mode === 'reverse') {
     monthly = result.monthlyGross;
@@ -25,38 +27,85 @@ const ResultCard = ({ result, mode, inputTax }) => {
     rate = (inputTax * 12) / result.annualGross;
   }
 
-  const taxForSarcasm = isReverse ? inputTax : monthly;
+  const taxForSarcasm = isTER ? result.tax : (isReverse ? inputTax : monthly);
   const sarcasticComment = getSarcasticComment(taxForSarcasm);
 
   const hasLayers = result.layers && result.layers.length > 0;
 
   return (
     <div className="result-section">
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
-        <div style={{ background: 'var(--bg-input)', padding: '1rem', borderRadius: '0.75rem', textAlign: 'center' }}>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>
-            <Calendar size={14} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle' }} />
-            {isReverse ? 'Required Monthly Gross' : 'Monthly Tax'}
+      {isTER ? (
+        // TER Mode: Show Gross, Tax, Net breakdown
+        <>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+            <div style={{ background: 'var(--bg-input)', padding: '1rem', borderRadius: '0.75rem', textAlign: 'center' }}>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>
+                <Calendar size={14} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle' }} />
+                Required Gross
+              </div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                {formatCurrency(result.grossMonthly)}
+              </div>
+            </div>
+            <div style={{ background: 'var(--bg-input)', padding: '1rem', borderRadius: '0.75rem', textAlign: 'center' }}>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>
+                <Calendar size={14} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle' }} />
+                Tax Withheld
+              </div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--brand-red)' }}>
+                {formatCurrency(result.tax)}
+              </div>
+            </div>
+            <div style={{ background: 'var(--bg-input)', padding: '1rem', borderRadius: '0.75rem', textAlign: 'center' }}>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>
+                <Calendar size={14} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle' }} />
+                Your Take-Home
+              </div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#22c55e' }}>
+                {formatCurrency(result.netMonthly)}
+              </div>
+            </div>
           </div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-            {formatCurrency(monthly)}
+          {(result.thrTax > 0 || result.bonusTax > 0) && (
+            <div style={{ textAlign: 'center', marginBottom: '1rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+              {result.thrTax > 0 && <div>THR Tax: {formatCurrency(result.thrTax)}</div>}
+              {result.bonusTax > 0 && <div>Bonus Tax: {formatCurrency(result.bonusTax)}</div>}
+              <div style={{ marginTop: '0.5rem', fontWeight: 600 }}>
+                Total Annual Tax: {formatCurrency(result.totalAnnualTax)}
+              </div>
+            </div>
+          )}
+        </>
+      ) : (
+        // Real Cost and Reverse Mode: Show Monthly/Annual
+        <>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+            <div style={{ background: 'var(--bg-input)', padding: '1rem', borderRadius: '0.75rem', textAlign: 'center' }}>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>
+                <Calendar size={14} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle' }} />
+                {isReverse ? 'Required Monthly Gross' : 'Monthly Tax'}
+              </div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                {formatCurrency(monthly)}
+              </div>
+            </div>
+            <div style={{ background: 'var(--bg-input)', padding: '1rem', borderRadius: '0.75rem', textAlign: 'center' }}>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>
+                <Calendar size={14} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle' }} />
+                {isReverse ? 'Required Annual Gross' : 'Annual Tax'}
+              </div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                {formatCurrency(annual)}
+              </div>
+            </div>
           </div>
-        </div>
-        <div style={{ background: 'var(--bg-input)', padding: '1rem', borderRadius: '0.75rem', textAlign: 'center' }}>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>
-            <Calendar size={14} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle' }} />
-            {isReverse ? 'Required Annual Gross' : 'Annual Tax'}
-          </div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-            {formatCurrency(annual)}
-          </div>
-        </div>
-      </div>
 
-      {isReverse && (
-        <div style={{ textAlign: 'center', marginBottom: '1rem', color: 'var(--text-secondary)' }}>
-          To pay <span style={{ color: 'var(--brand-red)', fontWeight: 600 }}>{formatCurrency(inputTax)}</span> tax/month
-        </div>
+          {isReverse && (
+            <div style={{ textAlign: 'center', marginBottom: '1rem', color: 'var(--text-secondary)' }}>
+              To pay <span style={{ color: 'var(--brand-red)', fontWeight: 600 }}>{formatCurrency(inputTax)}</span> tax/month
+            </div>
+          )}
+        </>
       )}
 
       <div className="result-rate">
