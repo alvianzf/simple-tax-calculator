@@ -149,7 +149,7 @@ const ResultCard = ({ result, mode, inputTax, thrInput = 0, bonusInput = 0 }) =>
           marginBottom: '1.5rem',
           background: 'var(--bg-card)',
           borderRadius: '1rem',
-          overflow: 'hidden',
+          // overflow: 'hidden', // Removed to prevent clipping on mobile
           border: `1px solid ${comparison.color}33`,
           boxShadow: `0 0 20px ${comparison.color}15`,
           display: 'flex',
@@ -163,11 +163,19 @@ const ResultCard = ({ result, mode, inputTax, thrInput = 0, bonusInput = 0 }) =>
             fontSize: '1.1rem',
             textAlign: 'center',
             textTransform: 'uppercase',
-            letterSpacing: '0.05em'
+            letterSpacing: '0.05em',
+            borderTopLeftRadius: '1rem',
+            borderTopRightRadius: '1rem'
           }}>
             {comparison.isZero ? '🎊 Congratulations! 🎊' : 'You could afford these...'}
           </div>
-          <div style={{ padding: '2rem 1.5rem', textAlign: 'center', background: `linear-gradient(180deg, ${comparison.color}08, var(--bg-input))` }}>
+          <div style={{
+            padding: '2rem 1.5rem',
+            textAlign: 'center',
+            background: `linear-gradient(180deg, ${comparison.color}08, var(--bg-input))`,
+            borderBottomLeftRadius: '1rem',
+            borderBottomRightRadius: '1rem'
+          }}>
             <div style={{ fontSize: '4.5rem', marginBottom: '1rem', lineHeight: 1 }}>{comparison.icon}</div>
             <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.5rem', lineHeight: 1.2 }}>
               {comparison.item}

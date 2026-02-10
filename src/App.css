@@ -329,6 +329,10 @@ select:focus {
     display: none !important;
   }
 
+  .tooltip-popup {
+    display: none !important;
+  }
+
   .result-rate {
     font-size: 0.75rem;
     margin-bottom: 1rem;

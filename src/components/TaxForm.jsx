@@ -41,7 +41,7 @@ const TaxForm = ({
           True Cost
           <span style={{ display: 'block', fontSize: '0.7em', opacity: 0.8 }}>(Annualized)</span>
           {showHelp === 'real' && (
-            <div style={{
+            <div className="tooltip-popup" style={{
               position: 'absolute',
               top: '100%',
               left: '50%',
@@ -73,7 +73,7 @@ const TaxForm = ({
           Payroll Slip
           <span style={{ display: 'block', fontSize: '0.7em', opacity: 0.8 }}>(TER 2024)</span>
           {showHelp === 'ter' && (
-            <div style={{
+            <div className="tooltip-popup" style={{
               position: 'absolute',
               top: '100%',
               left: '50%',
@@ -105,7 +105,7 @@ const TaxForm = ({
           Reverse
           <span style={{ display: 'block', fontSize: '0.7em', opacity: 0.8 }}>(Tax → Income)</span>
           {showHelp === 'reverse' && (
-            <div style={{
+            <div className="tooltip-popup" style={{
               position: 'absolute',
               top: '100%',
               left: '50%',
