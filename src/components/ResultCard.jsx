@@ -33,8 +33,87 @@ const ResultCard = ({ result, mode, inputTax }) => {
 
   const hasLayers = result.layers && result.layers.length > 0;
 
+  // Visual Comparison Logic
+  const getComparison = (taxAmount) => {
+    if (taxAmount <= 0) return null;
+    if (taxAmount < 500000) return {
+      item: "50 Cups of Instant Coffee",
+      image: "/tax_compare_coffee_1770714977875.png", // Use generated image
+      color: "#fbbf24",
+      icon: "☕"
+    };
+    if (taxAmount < 2000000) return {
+      item: "1 Year of Netflix Premium",
+      image: null,
+      color: "#e50914",
+      icon: "🎬"
+    };
+    if (taxAmount < 5000000) return {
+      item: "A Mid-Range Smartphone",
+      image: null,
+      color: "#3b82f6",
+      icon: "📱"
+    };
+    if (taxAmount < 10000000) return {
+      item: "A Designer Handbag",
+      image: null,
+      color: "#ec4899",
+      icon: "👜"
+    };
+    return {
+      item: "A Used Japanese Car",
+      image: null,
+      color: "#64748b",
+      icon: "🚗"
+    };
+  };
+
+  const comparison = getComparison(taxForSarcasm);
+
   return (
     <div className="result-section">
+      {comparison && (
+        <div style={{
+          marginBottom: '1.5rem',
+          background: 'var(--bg-card)',
+          borderRadius: '1rem',
+          overflow: 'hidden',
+          border: '1px solid var(--border-color)',
+          display: 'flex',
+          flexDirection: 'column' // Mobile first
+        }}>
+          <div style={{
+            background: comparison.color,
+            padding: '0.75rem',
+            color: 'white',
+            fontWeight: 600,
+            fontSize: '0.9rem',
+            textAlign: 'center',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.5rem'
+          }}>
+            <span>Your Monthly Tax is equivalent to...</span>
+          </div>
+          <div style={{ padding: '1.5rem', textAlign: 'center', background: 'var(--bg-input)' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>{comparison.icon}</div>
+            <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>
+              {comparison.item}
+            </div>
+            {/* Placeholder for image if we had more */}
+            {comparison.image && (
+              <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                (Imagine this pile on your desk)
+              </div>
+            )}
+            <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+              Every single month. Gone.
+            </div>
+          </div>
+        </div>
+      )}
+
       {isTER ? (
         // TER Mode: Show Gross, Tax, Net breakdown
         <>
@@ -67,11 +146,59 @@ const ResultCard = ({ result, mode, inputTax }) => {
               </div>
             </div>
           </div>
-          {(result.thrTax > 0 || result.bonusTax > 0) && (
-            <div style={{ textAlign: 'center', marginBottom: '1rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-              {result.thrTax > 0 && <div>THR Tax: {formatCurrency(result.thrTax)}</div>}
-              {result.bonusTax > 0 && <div>Bonus Tax: {formatCurrency(result.bonusTax)}</div>}
-              <div style={{ marginTop: '0.5rem', fontWeight: 600 }}>
+          {(result.thrGross > 0 || result.bonusGross > 0) && (
+            <div style={{
+              background: 'var(--bg-input)',
+              padding: '1rem',
+              borderRadius: '0.75rem',
+              marginBottom: '1rem',
+              fontSize: '0.9rem'
+            }}>
+              <div style={{ fontWeight: 600, marginBottom: '0.75rem', color: 'var(--text-primary)' }}>
+                Irregular Income Breakdown
+              </div>
+
+              {result.thrGross > 0 && (
+                <div style={{ marginBottom: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px dashed var(--border-color)' }}>
+                  <div style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>THR (Tunjangan Hari Raya)</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem', fontSize: '0.85rem' }}>
+                    <div>
+                      <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>Gross</div>
+                      <div style={{ fontWeight: 600 }}>{formatCurrency(result.thrGross)}</div>
+                    </div>
+                    <div>
+                      <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>Tax</div>
+                      <div style={{ fontWeight: 600, color: 'var(--brand-red)' }}>{formatCurrency(result.thrTax)}</div>
+                    </div>
+                    <div>
+                      <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>Take-Home</div>
+                      <div style={{ fontWeight: 600, color: '#22c55e' }}>{formatCurrency(result.thrTakeHome)}</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {result.bonusGross > 0 && (
+                <div style={{ marginBottom: '0.5rem' }}>
+                  <div style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Yearly Bonus</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem', fontSize: '0.85rem' }}>
+                    <div>
+                      <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>Gross</div>
+                      <div style={{ fontWeight: 600 }}>{formatCurrency(result.bonusGross)}</div>
+                    </div>
+                    <div>
+                      <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>Tax</div>
+                      <div style={{ fontWeight: 600, color: 'var(--brand-red)' }}>{formatCurrency(result.bonusTax)}</div>
+                    </div>
+                    <div>
+                      <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>Take-Home</div>
+                      <div style={{ fontWeight: 600, color: '#22c55e' }}>{formatCurrency(result.bonusTakeHome)}</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border-color)', fontWeight: 600, textAlign: 'center' }}>
                 Total Annual Tax: {formatCurrency(result.totalAnnualTax)}
               </div>
             </div>
