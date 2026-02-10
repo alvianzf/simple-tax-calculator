@@ -1,5 +1,5 @@
 import React from 'react';
-import { Palmtree, Waves } from 'lucide-react';
+import { Palmtree, Waves, House } from 'lucide-react';
 
 const Header = () => {
   return (
@@ -17,7 +17,7 @@ const Header = () => {
         </h1>
         <div className="header-icons" style={{ display: 'flex', alignItems: 'flex-end', gap: '0' }}>
           <Waves size={36} style={{ color: '#38bdf8', opacity: 0.9 }} />
-          <Waves size={48} style={{ color: '#38bdf8', opacity: 0.9 }} />
+          <House size={30} style={{ transform: 'rotate(30deg)', color: '#ba4e00ff', opacity: 0.9 }} />
           <Waves size={40} style={{ color: '#38bdf8', opacity: 0.9 }} />
         </div>
       </div>
