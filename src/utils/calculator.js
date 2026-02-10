@@ -79,9 +79,14 @@ export function calculateGrossFromAnnualTax(targetTax, status) {
     // Iterative approach is safest and easiest to maintain given the layers.
 
     // Cap iterations to prevent infinite loops in edge cases
-    let low = 0;
-    let high = targetTax * 20; // Rough upper bound estimate (5% lowest rate -> 20x tax)
-    let bestGross = 0;
+    let low = PTKP[status] || 54000000; // Gross must be at least PTKP to have tax
+    let high = low + (targetTax * 20); // Base estimate (assuming 5% rate)
+    
+    // Adjust high if tax is large (higher brackets)
+    if (targetTax > 60000000 * 0.05) high = low + (targetTax * 10); // Closer to 15% etc
+    if (targetTax > 500000000) high = low + (targetTax * 5); // Closer to 25-30%
+
+    let bestGross = low;
     
     // Binary search for Gross that yields this Tax
     for (let i = 0; i < 100; i++) {
