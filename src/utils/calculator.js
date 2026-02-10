@@ -155,6 +155,87 @@ export function calculateTER(grossIncome, status) {
     return { tax, rate };
 }
 
+// --- TER: Reverse Calculation (Net Income -> Gross Income) ---
+
+export function calculateGrossFromNet(netIncome, status, thr = 0, bonus = 0) {
+    // Determine which TER table to use
+    const category = STATUS_CATEGORY_MAP[status] || 'A';
+    let table;
+    switch (category) {
+        case 'B': table = TER_B.length > 0 ? TER_B : TER_A; break;
+        case 'C': table = TER_C.length > 0 ? TER_C : TER_A; break;
+        default: table = TER_A;
+    }
+    
+    // Binary search approach to find gross income that results in target net income
+    // Net = Gross - Tax, so we need to find Gross where (Gross - TER(Gross)) = Net
+    
+    let low = netIncome; // Minimum possible gross
+    let high = netIncome * 2; // Maximum possible gross (assuming tax rate < 50%)
+    let bestGross = netIncome;
+    let iterations = 0;
+    const maxIterations = 50;
+    
+    while (low <= high && iterations < maxIterations) {
+        const mid = Math.floor((low + high) / 2);
+        
+        // Calculate tax for this gross income
+        const tier = table.find(t => mid <= t.max);
+        const rate = tier ? tier.rate : 0;
+        const tax = Math.floor(mid * rate);
+        const calculatedNet = mid - tax;
+        
+        if (Math.abs(calculatedNet - netIncome) < 1000) {
+            // Close enough (within 1k)
+            bestGross = mid;
+            break;
+        }
+        
+        if (calculatedNet < netIncome) {
+            // Need higher gross
+            low = mid + 1000;
+        } else {
+            // Need lower gross
+            high = mid - 1000;
+        }
+        
+        bestGross = mid;
+        iterations++;
+    }
+    
+    // Calculate final tax with the best gross found
+    const finalTier = table.find(t => bestGross <= t.max);
+    const finalRate = finalTier ? finalTier.rate : 0;
+    const finalTax = Math.floor(bestGross * finalRate);
+    const finalNet = bestGross - finalTax;
+    
+    // Handle THR and Bonus if provided
+    let thrTax = 0;
+    let bonusTax = 0;
+    
+    if (thr > 0) {
+        const thrTier = table.find(t => thr <= t.max);
+        const thrRate = thrTier ? thrTier.rate : 0;
+        thrTax = Math.floor(thr * thrRate);
+    }
+    
+    if (bonus > 0) {
+        const bonusTier = table.find(t => bonus <= t.max);
+        const bonusRate = bonusTier ? bonusTier.rate : 0;
+        bonusTax = Math.floor(bonus * bonusRate);
+    }
+    
+    return {
+        grossMonthly: bestGross,
+        tax: finalTax,
+        netMonthly: finalNet,
+        rate: finalRate,
+        thrTax,
+        bonusTax,
+        totalAnnualTax: (finalTax * 12) + thrTax + bonusTax
+    };
+}
+
 // --- UTILS ---
 
 export function getSarcasticComment(taxMonthly) {
