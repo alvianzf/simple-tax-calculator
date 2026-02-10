@@ -247,6 +247,30 @@ const ResultCard = ({ result, mode, inputTax }) => {
         <p>"{sarcasticComment}"</p>
       </div>
 
+      {/* No THR/Bonus remarks */}
+      {mode === 'real' && result.bonus !== undefined && result.bonus === 0 && (
+        <div className="sarcastic-box" style={{ marginTop: '1rem', borderColor: '#f59e0b', background: 'rgba(245, 158, 11, 0.05)' }}>
+          <p style={{ color: '#f59e0b', fontSize: '0.9rem' }}>
+            💸 "{NO_THR_NO_BONUS_COMMENTS[Math.floor(Math.random() * NO_THR_NO_BONUS_COMMENTS.length)]}"
+          </p>
+        </div>
+      )}
+
+      {mode === 'ter' && result.thrGross === 0 && result.bonusGross === 0 && (
+        <div className="sarcastic-box" style={{ marginTop: '1rem', borderColor: '#f59e0b', background: 'rgba(245, 158, 11, 0.05)' }}>
+          <p style={{ color: '#f59e0b', fontSize: '0.9rem' }}>
+            💸 "{NO_THR_NO_BONUS_COMMENTS[Math.floor(Math.random() * NO_THR_NO_BONUS_COMMENTS.length)]}"
+          </p>
+        </div>
+      )}
+
+      {mode === 'ter' && result.thrGross > 0 && result.bonusGross === 0 && (
+        <div className="sarcastic-box" style={{ marginTop: '1rem', borderColor: '#f59e0b', background: 'rgba(245, 158, 11, 0.05)' }}>
+          <p style={{ color: '#f59e0b', fontSize: '0.9rem' }}>
+            💸 "{NO_BONUS_COMMENTS[Math.floor(Math.random() * NO_BONUS_COMMENTS.length)]}"
+          </p>
+        </div>
+      )}
       {hasLayers && (
         <div style={{ marginTop: '2rem', textAlign: 'left', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
           <button
