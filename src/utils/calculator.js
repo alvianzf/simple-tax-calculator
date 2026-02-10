@@ -8,9 +8,10 @@ import {
 
 // --- CORE: The "True Cost" Calculation (Annualized / 12) ---
 
-export function calculateRealMonthlyTax(grossMonthly, status) {
+export function calculateRealMonthlyTax(grossMonthly, status, bonus = 0) {
     // 1. Annualize
-    const annualGross = grossMonthly * 12;
+    const annualSalary = grossMonthly * 12;
+    const annualGross = annualSalary + bonus;
 
     // 2. Determine PTKP
     const ptkpAmount = PTKP[status] || PTKP['TK/0'];
@@ -73,17 +74,23 @@ export function calculateRealMonthlyTax(grossMonthly, status) {
 
 // --- REVERSE: Tax -> Income ---
 export function calculateGrossFromAnnualTax(targetTax, status) {
+    // We already have 'calculateGrossFromAnnualTax' but need to add 'layers' support
+    // Logic: Gross = (PKP + PTKP).
+    // The layers are derivative of PKP.
+
     if (targetTax <= 0) {
         return {
-            annualGross: 0, // Or PTKP limit? Technically 0 tax means <= PTKP. We'll return 0 for simplicity.
+            annualGross: 0, 
             monthlyGross: 0,
             pkp: 0,
-            ptkp: PTKP[status] || PTKP['TK/0']
+            ptkp: PTKP[status] || PTKP['TK/0'],
+            layers: [] // Added
         };
     }
 
     let remainingTax = targetTax;
     let calculatedPKP = 0;
+    const layers = []; // To track reconstruction
 
     for (const tier of ARTICLE_17_RATES) {
         if (remainingTax <= 0) break;
@@ -94,15 +101,29 @@ export function calculateGrossFromAnnualTax(targetTax, status) {
         
         const maxTaxForBracket = bracketSize === Infinity ? Infinity : Math.floor(bracketSize * tier.rate);
 
+        let taxInThisBracket = 0;
+        let incomeInThisBracket = 0;
+
         if (remainingTax <= maxTaxForBracket) {
             // Fits in this bracket
-            calculatedPKP += remainingTax / tier.rate;
+            incomeInThisBracket = remainingTax / tier.rate;
+            taxInThisBracket = remainingTax;
+            
             remainingTax = 0;
         } else {
             // Fills this bracket
-            calculatedPKP += bracketSize;
+            incomeInThisBracket = bracketSize;
+            taxInThisBracket = maxTaxForBracket;
+            
             remainingTax -= maxTaxForBracket;
         }
+
+        calculatedPKP += incomeInThisBracket;
+        layers.push({
+            rate: tier.rate,
+            amount: Math.floor(incomeInThisBracket),
+            tax: Math.floor(taxInThisBracket)
+        });
     }
 
     const ptkp = PTKP[status] || PTKP['TK/0'];
@@ -113,7 +134,8 @@ export function calculateGrossFromAnnualTax(targetTax, status) {
         annualGross: Math.floor(annualGross),
         monthlyGross: monthlyGross,
         pkp: Math.floor(calculatedPKP),
-        ptkp: ptkp
+        ptkp: ptkp,
+        layers: layers
     };
 }
 
@@ -137,8 +159,30 @@ export function calculateTER(grossIncome, status) {
 
 export function getSarcasticComment(taxMonthly) {
     if (taxMonthly <= 0) return SARCASTIC_COMMENTS[0].text;
-    const comment = SARCASTIC_COMMENTS.find(c => taxMonthly <= c.threshold) || SARCASTIC_COMMENTS[SARCASTIC_COMMENTS.length - 1];
-    return comment.text;
+    
+    // Sort logic to be safe if array is unsorted
+    const sortedComments = [...SARCASTIC_COMMENTS].sort((a, b) => a.threshold - b.threshold);
+    
+    // Find the highest threshold that is LESS THAN or EQUAL to the tax
+    let selected = sortedComments[0];
+    for (const c of sortedComments) {
+        if (taxMonthly > c.threshold) { 
+            // Keep going up
+        } else {
+            selected = c;
+            break; 
+        }
+        // Correct logic: we want the comment for the range.
+        // e.g. Tax 100k -> Matches threshold 150000? Or previous?
+        // Let's use simpler logic: Find first threshold >= tax
+    }
+    
+    // Re-do find logic:
+    // Find result where tax <= threshold.
+    const match = sortedComments.find(c => taxMonthly <= c.threshold);
+    
+    // If tax is huge and exceeds all thresholds, take the last one
+    return match ? match.text : sortedComments[sortedComments.length - 1].text;
 }
 
 export function formatCurrency(amount) {
