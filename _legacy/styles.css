@@ -1,0 +1,210 @@
+:root {
+    --brand-red: #990000;
+    --font-heading: 'Outfit', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    
+    /* Slate Based Theme (Dark Mode Default) */
+    --bg-main: #0f172a;
+    --bg-card: #1e293b;
+    --bg-input: #334155;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --border-color: #334155;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    line-height: 1.5;
+}
+
+.container {
+    width: 100%;
+    max-width: 600px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+h1 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 3rem;
+    letter-spacing: -0.05em;
+    margin-bottom: 0.5rem;
+}
+
+h1 span {
+    color: var(--brand-red);
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+.card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.currency-symbol {
+    position: absolute;
+    left: 1rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+input[type="text"],
+select {
+    width: 100%;
+    background-color: var(--bg-input);
+    border: 2px solid transparent;
+    border-radius: 0.75rem;
+    padding: 1rem 1rem 1rem 1rem;
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 1.1rem;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+input[type="text"] {
+    padding-left: 3rem; 
+}
+
+input:focus,
+select:focus {
+    border-color: var(--brand-red);
+    box-shadow: 0 0 0 4px rgba(153, 0, 0, 0.1);
+}
+
+.options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.switch-group {
+    display: flex;
+    background-color: var(--bg-input);
+    padding: 0.25rem;
+    border-radius: 999px;
+    margin-bottom: 2rem;
+}
+
+.switch-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 0.75rem;
+    border-radius: 999px;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.switch-btn.active {
+    background-color: var(--brand-red);
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.result-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.5s ease;
+}
+
+.result-section.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.result-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.result-amount {
+    font-family: var(--font-heading);
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.result-rate {
+    display: inline-block;
+    background-color: rgba(153, 0, 0, 0.2);
+    color: #fca5a5;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+.sarcastic-box {
+    background-color: rgba(15, 23, 42, 0.5);
+    border-left: 4px solid var(--brand-red);
+    padding: 1rem;
+    text-align: left;
+    border-radius: 0 0.5rem 0.5rem 0;
+    font-style: italic;
+    color: var(--text-secondary);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-in {
+    animation: fadeIn 0.5s ease forwards;
+}

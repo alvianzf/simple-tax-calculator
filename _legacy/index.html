@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Tax Calculator</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="animate-in">
+            <h1>Simple Tax<span>.</span></h1>
+            <p class="subtitle">Calculate your contribution to the nation (sadly).</p>
+        </header>
+
+        <div class="card animate-in" style="animation-delay: 0.1s;">
+            <!-- Calculation Mode Switch -->
+            <div class="switch-group">
+                <button class="switch-btn active" data-mode="monthly" onclick="setMode('monthly')">Monthly Gross</button>
+                <button class="switch-btn" data-mode="net-gross" onclick="setMode('net-gross')">Net to Gross</button>
+            </div>
+
+            <div id="calculator-form">
+                <div class="form-group">
+                    <label id="input-label">Monthly Gross Income</label>
+                    <div class="input-wrapper">
+                        <span class="currency-symbol">Rp</span>
+                        <input type="text" id="income-input" placeholder="0" autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="options-grid">
+                    <div class="form-group">
+                        <label>Marital Status</label>
+                        <select id="status-select">
+                            <option value="TK/0">TK/0 (Single, 0 Dep)</option>
+                            <option value="TK/1">TK/1 (Single, 1 Dep)</option>
+                            <option value="TK/2">TK/2 (Single, 2 Dep)</option>
+                            <option value="TK/3">TK/3 (Single, 3 Dep)</option>
+                            <option value="K/0">K/0 (Married, 0 Dep)</option>
+                            <option value="K/1">K/1 (Married, 1 Dep)</option>
+                            <option value="K/2">K/2 (Married, 2 Dep)</option>
+                            <option value="K/3">K/3 (Married, 3 Dep)</option>
+                        </select>
+                    </div>
+                    <!-- Future: Year Toggle if needed, currently implied by TER usage -->
+                </div>
+            </div>
+
+            <div id="result-section" class="result-section">
+                <div class="result-label">Estimated PPh 21 Tax</div>
+                <div class="result-amount" id="tax-amount">Rp 0</div>
+                <div class="result-rate" id="tax-rate">Rate: 0%</div>
+                
+                <div class="sarcastic-box">
+                    <p id="sarcastic-comment">"..."</p>
+                </div>
+
+                <!-- Extra details for Net to Gross mode -->
+                <div id="gross-up-details" style="display: none; margin-top: 1rem; text-align: left; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span style="color: var(--text-secondary);">Target Net:</span>
+                        <span id="target-net-display" style="color: var(--text-primary); font-weight: 600;">Rp 0</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--text-secondary);">Required Gross:</span>
+                        <span id="required-gross-display" style="color: var(--brand-red); font-weight: 600;">Rp 0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { calculateMonthlyTax, calculateGrossUp, formatCurrency, getSarcasticComment } from './calculator.js';
+
+        // State
+        let currentMode = 'monthly';
+        let incomeValue = 0;
+
+        // Elements
+        const incomeInput = document.getElementById('income-input');
+        const statusSelect = document.getElementById('status-select');
+        const taxAmountEl = document.getElementById('tax-amount');
+        const taxRateEl = document.getElementById('tax-rate');
+        const sarcasticEl = document.getElementById('sarcastic-comment');
+        const resultSection = document.getElementById('result-section');
+        const inputLabel = document.getElementById('input-label');
+        const grossUpDetails = document.getElementById('gross-up-details');
+        const targetNetDisplay = document.getElementById('target-net-display');
+        const requiredGrossDisplay = document.getElementById('required-gross-display');
+        const modeBtns = document.querySelectorAll('.switch-btn');
+
+        // Helper: Format Input
+        incomeInput.addEventListener('input', (e) => {
+            // Remove non-digits
+            let val = e.target.value.replace(/\D/g, '');
+            if (val === '') {
+                incomeValue = 0;
+            } else {
+                incomeValue = parseInt(val, 10);
+            }
+            // Format display with dots
+            e.target.value = new Intl.NumberFormat('id-ID').format(incomeValue);
+            
+            calculate();
+        });
+
+        statusSelect.addEventListener('change', calculate);
+
+        // Global functions for HTML access
+        window.setMode = (mode) => {
+            currentMode = mode;
+            
+            // Update Tab UI
+            modeBtns.forEach(btn => {
+                if (btn.dataset.mode === mode) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+
+            // Update Label
+            if (mode === 'monthly') {
+                inputLabel.textContent = 'Monthly Gross Income';
+                grossUpDetails.style.display = 'none';
+            } else {
+                inputLabel.textContent = 'Desired Monthly Net Income';
+                grossUpDetails.style.display = 'block';
+            }
+            
+            calculate();
+        };
+
+        function calculate() {
+            if (incomeValue === 0) {
+                resultSection.classList.remove('visible');
+                return;
+            }
+
+            const status = statusSelect.value;
+            let resultTax = 0;
+            let resultRate = 0;
+            let gross = incomeValue;
+
+            if (currentMode === 'monthly') {
+                const res = calculateMonthlyTax(incomeValue, status);
+                resultTax = res.tax;
+                resultRate = res.rate;
+            } else {
+                // Net to Gross
+                const res = calculateGrossUp(incomeValue, status);
+                resultTax = res.tax;
+                resultRate = res.rate;
+                gross = res.gross;
+
+                targetNetDisplay.textContent = formatCurrency(incomeValue);
+                requiredGrossDisplay.textContent = formatCurrency(gross);
+            }
+
+            // Update UI
+            taxAmountEl.textContent = formatCurrency(resultTax);
+            taxRateEl.textContent = `Effective Rate: ${(resultRate * 100).toFixed(2)}%`;
+            sarcasticEl.textContent = getSarcasticComment(resultTax);
+            
+            resultSection.classList.add('visible');
+        }
+    </script>
+</body>
+</html>
