@@ -211,18 +211,22 @@ export function calculateGrossFromNet(netIncome, status, thr = 0, bonus = 0) {
     
     // Handle THR and Bonus if provided
     let thrTax = 0;
+    let thrTakeHome = 0;
     let bonusTax = 0;
+    let bonusTakeHome = 0;
     
     if (thr > 0) {
         const thrTier = table.find(t => thr <= t.max);
         const thrRate = thrTier ? thrTier.rate : 0;
         thrTax = Math.floor(thr * thrRate);
+        thrTakeHome = thr - thrTax;
     }
     
     if (bonus > 0) {
         const bonusTier = table.find(t => bonus <= t.max);
         const bonusRate = bonusTier ? bonusTier.rate : 0;
         bonusTax = Math.floor(bonus * bonusRate);
+        bonusTakeHome = bonus - bonusTax;
     }
     
     return {
@@ -230,8 +234,12 @@ export function calculateGrossFromNet(netIncome, status, thr = 0, bonus = 0) {
         tax: finalTax,
         netMonthly: finalNet,
         rate: finalRate,
+        thrGross: thr,
         thrTax,
+        thrTakeHome,
+        bonusGross: bonus,
         bonusTax,
+        bonusTakeHome,
         totalAnnualTax: (finalTax * 12) + thrTax + bonusTax
     };
 }
