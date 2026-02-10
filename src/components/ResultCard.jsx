@@ -1,32 +1,43 @@
 import React, { useState } from 'react';
 import { getSarcasticComment, formatCurrency } from '../utils/calculator';
 
-const ResultCard = ({ result, mode }) => {
+const ResultCard = ({ result, mode, inputTax }) => {
   if (!result) return null;
   const [showDetails, setShowDetails] = useState(false);
 
   let monthly = 0;
   let annual = 0;
   let rate = 0;
+  let isReverse = mode === 'reverse';
 
   if (mode === 'real') {
     monthly = result.taxMonthly;
     annual = result.taxAnnual;
     rate = result.rateEffective;
-  } else {
+  } else if (mode === 'ter') {
     monthly = result.tax;
     annual = result.tax * 12;
     rate = result.rate;
+  } else if (mode === 'reverse') {
+    // In reverse mode, 'result' is the Gross Income info
+    monthly = result.monthlyGross;
+    annual = result.annualGross;
+    // Rate is Tax / AnnualGross
+    rate = (inputTax * 12) / result.annualGross;
   }
 
-  const sarcasticComment = getSarcasticComment(monthly);
+  // For sarcastic comment:
+  // If reverse, use inputTax (since that's the tax paid).
+  // If others, use calculated tax.
+  const taxForSarcasm = isReverse ? inputTax : monthly;
+  const sarcasticComment = getSarcasticComment(taxForSarcasm);
 
   return (
     <div className="result-section">
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
         <div style={{ background: 'var(--bg-input)', padding: '1rem', borderRadius: '0.75rem', textAlign: 'center' }}>
           <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>
-            Monthly
+            {isReverse ? 'Required Monthly Gross' : 'Monthly Tax'}
           </div>
           <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>
             {formatCurrency(monthly)}
@@ -34,7 +45,7 @@ const ResultCard = ({ result, mode }) => {
         </div>
         <div style={{ background: 'var(--bg-input)', padding: '1rem', borderRadius: '0.75rem', textAlign: 'center' }}>
           <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>
-            Annual
+            {isReverse ? 'Required Annual Gross' : 'Annual Tax'}
           </div>
           <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>
             {formatCurrency(annual)}
@@ -42,8 +53,15 @@ const ResultCard = ({ result, mode }) => {
         </div>
       </div>
 
+      {/* In Reverse Mode, show the Tax Input clearly */}
+      {isReverse && (
+        <div style={{ textAlign: 'center', marginBottom: '1rem', color: 'var(--text-secondary)' }}>
+          To pay <span style={{ color: 'var(--brand-red)', fontWeight: 600 }}>{formatCurrency(inputTax)}</span> tax/month
+        </div>
+      )}
+
       <div className="result-rate">
-        Effective Rate: {(rate * 100).toFixed(2)}%
+        Effective Rate: {(rate * 100 || 0).toFixed(2)}%
       </div>
 
       <div className="sarcastic-box">
@@ -86,15 +104,6 @@ const ResultCard = ({ result, mode }) => {
                     <span style={{ color: 'var(--brand-red)' }}>{formatCurrency(layer.tax)}</span>
                   </div>
                 ))}
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '0.5rem', borderTop: '1px solid var(--border-color)' }}>
-                <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Total Annual Tax</span>
-                <span style={{ fontWeight: 600, color: 'var(--brand-red)' }}>{formatCurrency(annual)}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.25rem' }}>
-                <span>÷ 12 Months</span>
-                <span>{formatCurrency(monthly)}</span>
               </div>
             </div>
           )}
