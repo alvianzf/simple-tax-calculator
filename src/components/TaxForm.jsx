@@ -3,6 +3,7 @@ import React from 'react';
 const TaxForm = ({
   method, setMethod,
   incomeDisplay, setIncomeDisplay,
+  thrDisplay, setThrDisplay,
   bonusDisplay, setBonusDisplay,
   status, setStatus
 }) => {
@@ -61,21 +62,36 @@ const TaxForm = ({
           </div>
         </div>
 
-        {/* Bonus Input (Only for True Cost) */}
+        {/* THR and Bonus Inputs (Only for True Cost) */}
         {method === 'real' && (
-          <div className="form-group" style={{ animation: 'fadeIn 0.5s' }}>
-            <label>Yearly Bonus / THR (Optional)</label>
-            <div className="input-wrapper">
-              <span className="currency-symbol">Rp</span>
-              <input
-                type="text"
-                placeholder="0"
-                value={bonusDisplay}
-                onChange={handleNumberChange(setBonusDisplay)}
-                autoComplete="off"
-              />
+          <>
+            <div className="form-group" style={{ animation: 'fadeIn 0.5s' }}>
+              <label>THR (Tunjangan Hari Raya)</label>
+              <div className="input-wrapper">
+                <span className="currency-symbol">Rp</span>
+                <input
+                  type="text"
+                  placeholder="0"
+                  value={thrDisplay}
+                  onChange={handleNumberChange(setThrDisplay)}
+                  autoComplete="off"
+                />
+              </div>
             </div>
-          </div>
+            <div className="form-group" style={{ animation: 'fadeIn 0.5s' }}>
+              <label>Yearly Bonus (Optional)</label>
+              <div className="input-wrapper">
+                <span className="currency-symbol">Rp</span>
+                <input
+                  type="text"
+                  placeholder="0"
+                  value={bonusDisplay}
+                  onChange={handleNumberChange(setBonusDisplay)}
+                  autoComplete="off"
+                />
+              </div>
+            </div>
+          </>
         )}
 
         <div className="options-grid">

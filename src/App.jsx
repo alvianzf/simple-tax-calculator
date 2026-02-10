@@ -9,15 +9,18 @@ function App() {
   const [method, setMethod] = useState('real') // 'real', 'ter', 'reverse'
   const [status, setStatus] = useState('TK/0')
   const [incomeDisplay, setIncomeDisplay] = useState('')
-  const [bonusDisplay, setBonusDisplay] = useState('') // New State
+  const [thrDisplay, setThrDisplay] = useState('') // THR State
+  const [bonusDisplay, setBonusDisplay] = useState('') // Bonus State
   const [result, setResult] = useState(null)
 
   useEffect(() => {
     // 1. Parse Inputs
     const inputValue = parseInt(incomeDisplay.replace(/\./g, '') || '0', 10)
+    const thrValue = parseInt(thrDisplay.replace(/\./g, '') || '0', 10)
     const bonusValue = parseInt(bonusDisplay.replace(/\./g, '') || '0', 10)
+    const totalBonus = thrValue + bonusValue
 
-    if (inputValue === 0 && method !== 'reverse') { // Reverse can try to calc for 0 but usually needs input
+    if (inputValue === 0 && method !== 'reverse') {
       setResult(null)
       return
     }
@@ -26,11 +29,10 @@ function App() {
     let res = null
 
     if (method === 'real') {
-      // Input: Monthly Gross + Bonus
-      res = calculateRealMonthlyTax(inputValue, status, bonusValue)
+      // Input: Monthly Gross + Total Bonus (THR + Yearly Bonus)
+      res = calculateRealMonthlyTax(inputValue, status, totalBonus)
     } else if (method === 'ter') {
-      // Input: Monthly Gross (TER ignores annual bonus for monthly withholding usually, or treats it per Masa Pajak)
-      // For simplicity we just calc TER on the monthly part
+      // Input: Monthly Gross (TER ignores annual bonus)
       res = calculateTER(inputValue, status)
     } else if (method === 'reverse') {
       // Input: Desired Monthly Tax
@@ -43,7 +45,7 @@ function App() {
     // 3. Update Result
     setResult(res)
 
-  }, [incomeDisplay, bonusDisplay, status, method])
+  }, [incomeDisplay, thrDisplay, bonusDisplay, status, method])
 
   return (
     <div className="container">
@@ -53,6 +55,8 @@ function App() {
         setMethod={setMethod}
         incomeDisplay={incomeDisplay}
         setIncomeDisplay={setIncomeDisplay}
+        thrDisplay={thrDisplay}
+        setThrDisplay={setThrDisplay}
         bonusDisplay={bonusDisplay}
         setBonusDisplay={setBonusDisplay}
         status={status}
