@@ -35,7 +35,13 @@ const ResultCard = ({ result, mode, inputTax }) => {
 
   // Visual Comparison Logic
   const getComparison = (taxAmount) => {
-    if (taxAmount <= 0) return null;
+    if (taxAmount <= 0) return {
+      item: "Absolutely Nothing",
+      color: "#22c55e",
+      icon: "🎉",
+      desc: "The government doesn't even want your money. Enjoy it while it lasts.",
+      isZero: true
+    };
     if (taxAmount < 500000) return {
       item: "50 Cups of Instant Coffee",
       color: "#fbbf24",
@@ -78,12 +84,13 @@ const ResultCard = ({ result, mode, inputTax }) => {
           background: 'var(--bg-card)',
           borderRadius: '1rem',
           overflow: 'hidden',
-          border: '1px solid var(--border-color)',
+          border: `1px solid ${comparison.color}33`,
+          boxShadow: `0 0 20px ${comparison.color}15`,
           display: 'flex',
           flexDirection: 'column'
         }}>
           <div style={{
-            background: comparison.color,
+            background: `linear-gradient(135deg, ${comparison.color}, ${comparison.color}cc)`,
             padding: '0.75rem',
             color: 'white',
             fontWeight: 800,
@@ -92,9 +99,9 @@ const ResultCard = ({ result, mode, inputTax }) => {
             textTransform: 'uppercase',
             letterSpacing: '0.05em'
           }}>
-            You could afford these...
+            {comparison.isZero ? '🎊 Congratulations! 🎊' : 'You could afford these...'}
           </div>
-          <div style={{ padding: '2rem 1.5rem', textAlign: 'center', background: 'var(--bg-input)' }}>
+          <div style={{ padding: '2rem 1.5rem', textAlign: 'center', background: `linear-gradient(180deg, ${comparison.color}08, var(--bg-input))` }}>
             <div style={{ fontSize: '4.5rem', marginBottom: '1rem', lineHeight: 1 }}>{comparison.icon}</div>
             <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.5rem', lineHeight: 1.2 }}>
               {comparison.item}
@@ -102,8 +109,8 @@ const ResultCard = ({ result, mode, inputTax }) => {
             <div style={{ fontSize: '1rem', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
               "{comparison.desc}"
             </div>
-            <div style={{ marginTop: '1.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)', opacity: 0.8 }}>
-              But you paid taxes instead.
+            <div style={{ marginTop: '1.5rem', fontSize: '0.75rem', color: comparison.isZero ? '#22c55e' : 'var(--text-secondary)', opacity: 0.8, fontWeight: comparison.isZero ? 600 : 400 }}>
+              {comparison.isZero ? 'Your wallet lives to fight another day.' : 'But you paid taxes instead.'}
             </div>
           </div>
         </div>
