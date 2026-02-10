@@ -116,8 +116,9 @@ export function calculateIncomeFromTax(targetTax, status) {
             };
         }
     }
-
-    // Fallback for highest bracket
+    
+    // Fallback if no exact match found or higher than max table
+    // Try last tier
     const lastTier = table[table.length - 1];
     const potentialGross = targetTax / lastTier.rate;
     return {
@@ -128,6 +129,7 @@ export function calculateIncomeFromTax(targetTax, status) {
 }
 
 export function getSarcasticComment(taxAmount) {
+    if (taxAmount <= 0) return SARCASTIC_COMMENTS[0].text;
     const comment = SARCASTIC_COMMENTS.find(c => taxAmount <= c.threshold) || SARCASTIC_COMMENTS[SARCASTIC_COMMENTS.length - 1];
     return comment.text;
 }
