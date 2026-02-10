@@ -19,18 +19,18 @@ const ResultCard = ({ result, mode, inputTax }) => {
     annual = result.tax * 12;
     rate = result.rate;
   } else if (mode === 'reverse') {
-    // In reverse mode, 'result' is the Gross Income info
     monthly = result.monthlyGross;
     annual = result.annualGross;
-    // Rate is Tax / AnnualGross
     rate = (inputTax * 12) / result.annualGross;
   }
 
-  // For sarcastic comment:
-  // If reverse, use inputTax (since that's the tax paid).
-  // If others, use calculated tax.
+  // Determine tax amount for sarcasm
   const taxForSarcasm = isReverse ? inputTax : monthly;
   const sarcasticComment = getSarcasticComment(taxForSarcasm);
+
+  // Can we show breakdown?
+  // 'real' mode has layers. 'reverse' mode now has layers too.
+  const hasLayers = result.layers && result.layers.length > 0;
 
   return (
     <div className="result-section">
@@ -53,7 +53,6 @@ const ResultCard = ({ result, mode, inputTax }) => {
         </div>
       </div>
 
-      {/* In Reverse Mode, show the Tax Input clearly */}
       {isReverse && (
         <div style={{ textAlign: 'center', marginBottom: '1rem', color: 'var(--text-secondary)' }}>
           To pay <span style={{ color: 'var(--brand-red)', fontWeight: 600 }}>{formatCurrency(inputTax)}</span> tax/month
@@ -68,8 +67,7 @@ const ResultCard = ({ result, mode, inputTax }) => {
         <p>"{sarcasticComment}"</p>
       </div>
 
-      {/* Detailed Breakdown (Only for True Cost mode) */}
-      {mode === 'real' && result.layers && (
+      {hasLayers && (
         <div style={{ marginTop: '2rem', textAlign: 'left', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
           <button
             onClick={() => setShowDetails(!showDetails)}
@@ -85,9 +83,10 @@ const ResultCard = ({ result, mode, inputTax }) => {
           {showDetails && (
             <div style={{ marginTop: '1rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span>Annual Gross</span>
+                <span>Annual Gross (Total)</span>
                 <span>{formatCurrency(result.annualGross)}</span>
               </div>
+
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                 <span>- PTKP (Tax Free)</span>
                 <span style={{ color: '#22c55e' }}>({formatCurrency(result.ptkp)})</span>
@@ -105,6 +104,20 @@ const ResultCard = ({ result, mode, inputTax }) => {
                   </div>
                 ))}
               </div>
+
+              {/* Total Summary */}
+              {!isReverse && (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '0.5rem', borderTop: '1px solid var(--border-color)' }}>
+                    <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Total Annual Tax</span>
+                    <span style={{ fontWeight: 600, color: 'var(--brand-red)' }}>{formatCurrency(result.taxAnnual)}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.25rem' }}>
+                    <span>÷ 12 Months</span>
+                    <span>{formatCurrency(result.taxMonthly)}</span>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>
