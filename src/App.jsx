@@ -1,34 +1,74 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useState, useEffect } from 'react'
+import Header from './components/Header'
+import TaxForm from './components/TaxForm'
+import ResultCard from './components/ResultCard'
+import { calculateMonthlyTax, calculateGrossUp, calculateIncomeFromTax } from './utils/calculator'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [mode, setMode] = useState('monthly') // 'monthly', 'net-gross', 'tax-gross'
+  const [status, setStatus] = useState('TK/0')
+  const [incomeDisplay, setIncomeDisplay] = useState('')
+  const [result, setResult] = useState(null)
+  const [gross, setGross] = useState(0)
+
+  useEffect(() => {
+    // 1. Parse Income
+    const incomeValue = parseInt(incomeDisplay.replace(/\./g, '') || '0', 10)
+
+    if (incomeValue === 0) {
+      setResult(null)
+      return
+    }
+
+    // 2. Calculate based on mode
+    let res = { tax: 0, rate: 0 }
+    let calculatedGross = incomeValue
+
+    if (mode === 'monthly') {
+      res = calculateMonthlyTax(incomeValue, status)
+      calculatedGross = incomeValue
+    } else if (mode === 'net-gross') {
+      const grossUp = calculateGrossUp(incomeValue, status)
+      res = { tax: grossUp.tax, rate: grossUp.rate }
+      calculatedGross = grossUp.gross
+    } else if (mode === 'tax-gross') {
+      const taxToGross = calculateIncomeFromTax(incomeValue, status)
+      res = { tax: taxToGross.tax, rate: taxToGross.rate }
+      calculatedGross = taxToGross.gross
+    }
+
+    // 3. Update Result State
+    setResult(res)
+    setGross(calculatedGross)
+
+  }, [incomeDisplay, status, mode])
+
+  // Reset input when mode changes (optional, but cleaner)
+  useEffect(() => {
+    setIncomeDisplay('')
+    setResult(null)
+  }, [mode])
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div className="container">
+      <Header />
+      <TaxForm
+        mode={mode}
+        setMode={setMode}
+        incomeDisplay={incomeDisplay}
+        setIncomeDisplay={setIncomeDisplay}
+        status={status}
+        setStatus={setStatus}
+      />
+
+      <ResultCard
+        result={result}
+        mode={mode}
+        gross={gross}
+        incomeValue={parseInt(incomeDisplay.replace(/\./g, '') || '0', 10)}
+      />
+    </div>
   )
 }
 
