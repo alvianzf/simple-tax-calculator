@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { getSarcasticComment, formatCurrency } from '../utils/calculator';
-import { NO_THR_NO_BONUS_COMMENTS, NO_BONUS_COMMENTS } from '../utils/tax-data';
+import { NO_THR_NO_BONUS_COMMENTS, NO_BONUS_COMMENTS, NO_THR_COMMENTS } from '../utils/tax-data';
 import { ChevronDown, ChevronUp, Calendar, Percent } from 'lucide-react';
 
 const ResultCard = ({ result, mode, inputTax, thrInput = 0, bonusInput = 0 }) => {
@@ -326,6 +326,14 @@ const ResultCard = ({ result, mode, inputTax, thrInput = 0, bonusInput = 0 }) =>
         <div className="sarcastic-box" style={{ marginTop: '1rem', borderColor: '#f59e0b', background: 'rgba(245, 158, 11, 0.05)' }}>
           <p style={{ color: '#f59e0b', fontSize: '0.9rem' }}>
             💸 "{NO_BONUS_COMMENTS[Math.floor(Math.random() * NO_BONUS_COMMENTS.length)]}"
+          </p>
+        </div>
+      )}
+
+      {mode !== 'reverse' && thrInput === 0 && bonusInput > 0 && (
+        <div className="sarcastic-box" style={{ marginTop: '1rem', borderColor: '#f59e0b', background: 'rgba(245, 158, 11, 0.05)' }}>
+          <p style={{ color: '#f59e0b', fontSize: '0.9rem' }}>
+            💸 "{NO_THR_COMMENTS[Math.floor(Math.random() * NO_THR_COMMENTS.length)]}"
           </p>
         </div>
       )}

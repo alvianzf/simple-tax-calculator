@@ -244,3 +244,10 @@ export const NO_BONUS_COMMENTS = [
     "THR only. Your company practices 'religious obligation compliance' and nothing more."
 ];
 
+export const NO_THR_COMMENTS = [
+    "Bonus but no THR? Your company skips the religious obligation but pays for performance. Interesting priorities.",
+    "Getting a bonus without THR is like getting dessert but no main course. Sweet, but questionable.",
+    "No THR? Does your company even know what Lebaran is? At least the bonus softens the blow.",
+    "Bonus without THR. Your employer celebrates your work ethic but not your holidays.",
+    "THR-less but bonus-blessed. Your company's HR policy was written by a very confused accountant."
+];
