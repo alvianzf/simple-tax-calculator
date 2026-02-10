@@ -44,7 +44,7 @@ export const TER_A = [
     { max: 12600000, rate: 0.04 }, // ... and so on
     { max: Infinity, rate: 0.34 } // Cap
 ];
-// (Note: In a real app we'd have the full CSV data here. For now we use Real Calc as primary)
+
 export const TER_B = []; 
 export const TER_C = []; 
 
@@ -227,3 +227,20 @@ export const SARCASTIC_COMMENTS = [
         ]
     }
 ];
+
+// Special sarcastic comments for no THR/Bonus scenarios
+export const NO_THR_NO_BONUS_COMMENTS = [
+    "No THR? No Bonus? Your company really said 'bare minimum only'. Ouch.",
+    "Zero irregular income. Are you sure you're employed, or is this just a very elaborate internship?",
+    "No THR, no bonus. Your employer's generosity is truly... minimal. At least you have a job?",
+    "Not a single rupiah in bonuses. Your company believes in 'lean operations'. Very lean.",
+    "No extras? Your payslip must be the saddest document you own."
+];
+
+export const NO_BONUS_COMMENTS = [
+    "At least you got THR. Your company remembered you exist once a year. Progress!",
+    "THR but no bonus? Your employer's generosity has a strict annual quota, apparently.",
+    "No yearly bonus. Performance reviews must be... interesting at your place.",
+    "THR only. Your company practices 'religious obligation compliance' and nothing more."
+];
+
