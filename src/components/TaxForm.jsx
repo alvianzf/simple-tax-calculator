@@ -148,13 +148,13 @@ const TaxForm = ({
           </div>
         </div>
 
-        {/* THR and Bonus Inputs (Only for True Cost / Gross -> Net) */}
-        {method === 'real' && (
+        {/* THR and Bonus Inputs (Real & Net -> Gross) */}
+        {(method === 'real' || method === 'netToGross') && (
           <>
             <div className="form-group" style={{ animation: 'fadeIn 0.5s' }}>
               <label>
                 <Gift size={16} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} />
-                THR (Tunjangan Hari Raya)
+                {method === 'netToGross' ? 'Net THR (Take Home)' : 'THR (Tunjangan Hari Raya)'}
               </label>
               <div className="input-wrapper">
                 <span className="currency-symbol">Rp</span>
@@ -170,7 +170,7 @@ const TaxForm = ({
             <div className="form-group" style={{ animation: 'fadeIn 0.5s' }}>
               <label>
                 <Gift size={16} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} />
-                Yearly Bonus (Optional)
+                {method === 'netToGross' ? 'Net Bonus (Take Home)' : 'Yearly Bonus (Optional)'}
               </label>
               <div className="input-wrapper">
                 <span className="currency-symbol">Rp</span>

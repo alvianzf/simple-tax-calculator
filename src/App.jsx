@@ -36,7 +36,7 @@ function App() {
     } else if (method === 'netToGross') {
       // Input: Monthly NET Salary
       // Calculate gross from net using Real Tax Burden (Iterative)
-      res = calculateGrossFromNet(inputValue, status)
+      res = calculateGrossFromNet(inputValue, status, thrValue, bonusValue)
       res.mode = 'netToGross'
     } else if (method === 'taxToGross') {
       // Input: Monthly Tax

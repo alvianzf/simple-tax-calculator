@@ -138,55 +138,112 @@ export function calculateTER(grossIncome, status) {
     return { tax, rate };
 }
 
-// --- REVERSE: Net Income -> Gross Income (Real Tax Burden) ---
-export function calculateGrossFromNet(netMonthly, status) {
-    // Target: We want (Gross - Tax(Gross)) = Net
-    // Tax is calculated using calculateRealMonthlyTax (Annualized -> PTKP -> Progressive -> Divide 12)
-    // We will use binary search to find the Gross.
+export function calculateGrossFromNet(netMonthly, status, netThr = 0, netBonus = 0) {
+    // 1. Calculate Total Annual Net Target
+    const totalAnnualNet = (netMonthly * 12) + netThr + netBonus;
 
-    let low = netMonthly; 
-    let high = netMonthly * 2; // Upper bound assumption
-    let bestGross = netMonthly;
-    
-    // refine upper bound if needed
+    // 2. Binary Search for Total Annual Gross that yields this Net
+    // We treat the year as a single calculation unit for the sake of finding the tax bracket.
+    // However, the tax calculation `calculateRealMonthlyTax` is designed for "Monthly * 12 + Bonus".
+    // So we need to feed it a "Monthly Gross" and a "Gross Bonus" such that:
+    // (CalcMonthlyNet * 12) + CalcNetThr + CalcNetBonus approx= TotalAnnualNet?
+    //
+    // SIMPLIFICATION:
+    // We solve for `AnnualGross`.
+    // We assume the ratio of Gross components matches the ratio of Net components (or simply proportional).
+    // Let Ratio_Monthly = (NetMonthly * 12) / TotalAnnualNet
+    // Let Ratio_Thr = NetThr / TotalAnnualNet
+    // Let Ratio_Bonus = NetBonus / TotalAnnualNet
+    //
+    // Then Proposed_MonthlyGross = (AnnualGross * Ratio_Monthly) / 12
+    // Then Proposed_Bonus = AnnualGross * (Ratio_Thr + Ratio_Bonus)
+    //
+    // Then we run `calculateRealMonthlyTax(Proposed_MonthlyGross, status, Proposed_Bonus)`
+    // And see if the resulting `(AnnualGross - Tax)` matches `TotalAnnualNet`.
+
+    let low = totalAnnualNet;
+    let high = totalAnnualNet * 2; // Upper bound
+    let bestTotalGross = totalAnnualNet;
+
+    // Safety break for upper bound
     while (true) {
-        const res = calculateRealMonthlyTax(high, status);
-        const net = high - res.taxMonthly;
-        if (net > netMonthly) break;
+        // Test high
+        const ratioMonthly = (netMonthly * 12) / totalAnnualNet;
+        const ratioBonus = (netThr + netBonus) / totalAnnualNet;
+
+        const testMonthlyGross = Math.floor((high * ratioMonthly) / 12);
+        const testGrossBonus = Math.floor(high * ratioBonus);
+
+        const res = calculateRealMonthlyTax(testMonthlyGross, status, testGrossBonus);
+        const calcNet = res.annualGross - res.taxAnnual;
+
+        if (calcNet > totalAnnualNet) break;
         high *= 2;
-        if (high > 10000000000) break; // Safety break 10M
+        if (high > 100000000000) break; // 100M safety? No 100B.
     }
 
-    for (let i = 0; i < 50; i++) {
+    const MAX_ITER = 50;
+    for (let i = 0; i < MAX_ITER; i++) {
         const mid = Math.floor((low + high) / 2);
-        const result = calculateRealMonthlyTax(mid, status);
-        const calculatedNet = mid - result.taxMonthly;
+        
+        // Distribute Mid (TotalGross) based on Net Ratios
+        const ratioMonthly = (netMonthly * 12) / totalAnnualNet;
+        const ratioBonus = (netThr + netBonus) / totalAnnualNet;
 
-        if (Math.abs(calculatedNet - netMonthly) < 1000) {
-            bestGross = mid;
+        const midMonthlyGross = Math.floor((mid * ratioMonthly) / 12);
+        const midGrossBonus = Math.floor(mid * ratioBonus);
+        
+        // Recalculate to ensure integer sum matches mid? 
+        // Small diff is fine, calculateRealMonthlyTax uses (Monthly*12 + Bonus)
+        
+        const res = calculateRealMonthlyTax(midMonthlyGross, status, midGrossBonus);
+        const calcNet = res.annualGross - res.taxAnnual;
+
+        if (Math.abs(calcNet - totalAnnualNet) < 2000) { // Tolerance
+            bestTotalGross = mid;
             break;
         }
 
-        if (calculatedNet < netMonthly) {
+        if (calcNet < totalAnnualNet) {
             low = mid + 1000;
         } else {
             high = mid - 1000;
         }
-        bestGross = mid;
+        bestTotalGross = mid;
     }
 
-    const finalResult = calculateRealMonthlyTax(bestGross, status);
+    // Final Calculation with Best Total Gross
+    const ratioMonthly = (netMonthly * 12) / totalAnnualNet;
+    const ratioBonus = (netThr + netBonus) / totalAnnualNet; // Combined THR + Bonus for tax calc
+
+    const finalMonthlyGross = Math.floor((bestTotalGross * ratioMonthly) / 12);
+    const finalGrossBonusTotal = Math.floor(bestTotalGross * ratioBonus);
+    
+    // We need to split the Gross Bonus back into THR and Bonus for display/logic if needed
+    // Ratio of THR vs Bonus within the Bonus part:
+    const totalNetBonus = netThr + netBonus;
+    const thrRatio = totalNetBonus > 0 ? netThr / totalNetBonus : 0;
+    
+    const finalGrossThr = Math.floor(finalGrossBonusTotal * thrRatio);
+    const finalGrossBonus = finalGrossBonusTotal - finalGrossThr;
+
+    const finalResult = calculateRealMonthlyTax(finalMonthlyGross, status, finalGrossBonusTotal);
 
     return {
-        grossMonthly: bestGross,
+        grossMonthly: finalMonthlyGross,
+        grossThr: finalGrossThr,
+        grossBonus: finalGrossBonus,
         annualGross: finalResult.annualGross,
         taxMonthly: finalResult.taxMonthly,
         taxAnnual: finalResult.taxAnnual,
-        netMonthly: bestGross - finalResult.taxMonthly,
+        netMonthly: finalMonthlyGross - finalResult.taxMonthly, // Note: This might slightly differ from input due to rounding, but mathematically correct for this Gross
         pkp: finalResult.pkp,
         ptkp: finalResult.ptkp,
         layers: finalResult.layers,
-        rateEffective: finalResult.rateEffective
+        rateEffective: finalResult.rateEffective,
+        // Helpers for display if needed
+        calculatedNetThr: finalGrossThr - Math.floor((finalResult.taxAnnual - (finalResult.taxMonthly * 12)) * thrRatio), // Approx tax distribution
+        calculatedNetBonus: finalGrossBonus - Math.floor((finalResult.taxAnnual - (finalResult.taxMonthly * 12)) * (1 - thrRatio))
     };
 }
 

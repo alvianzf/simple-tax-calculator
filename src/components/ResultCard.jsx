@@ -234,16 +234,32 @@ const ResultCard = ({ result, mode, inputVal, thrInput = 0, bonusInput = 0 }) =>
             </div>
           </div>
 
-          {(result.thrGross > 0 || result.bonusGross > 0) && (
+          {(result.grossThr > 0 || result.grossBonus > 0) && (
             <div style={{
               background: 'var(--bg-input)',
               padding: '1rem',
               borderRadius: '0.75rem',
               marginBottom: '1rem',
-              fontSize: '0.9rem'
+              fontSize: '0.9rem',
+              textAlign: 'left'
             }}>
-              {/* Irregular income block (omitted if logic removed from reverse modes) */}
-              {/* Note: In current implementation, reverse modes don't return these, so this won't render, which is correct. */}
+              <div style={{ fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Estimated Gross Breakdown:</div>
+              {result.grossThr > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                  <span>Gross THR:</span>
+                  <span style={{ fontWeight: 600 }}>{formatCurrency(result.grossThr)}</span>
+                </div>
+              )}
+              {result.grossBonus > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                  <span>Gross Bonus:</span>
+                  <span style={{ fontWeight: 600 }}>{formatCurrency(result.grossBonus)}</span>
+                </div>
+              )}
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px dashed var(--border-color)' }}>
+                <span>Calculated Annual Gross:</span>
+                <span style={{ fontWeight: 600 }}>{formatCurrency(result.annualGross)}</span>
+              </div>
             </div>
           )}
         </>
