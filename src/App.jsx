@@ -32,17 +32,18 @@ function App() {
     if (method === 'real') {
       // Input: Monthly Gross + Total Bonus (THR + Yearly Bonus)
       res = calculateRealMonthlyTax(inputValue, status, totalBonus)
-    } else if (method === 'ter') {
-      // Input: Monthly NET Income (Take-Home)
-      // Calculate gross from net using TER reverse calculation
-      res = calculateGrossFromNet(inputValue, status, thrValue, bonusValue)
-      // Mark this as TER mode for ResultCard
-      res.isTERMode = true
-    } else if (method === 'reverse') {
-      // Input: Desired Monthly Tax
+      res.mode = 'real'
+    } else if (method === 'netToGross') {
+      // Input: Monthly NET Salary
+      // Calculate gross from net using Real Tax Burden (Iterative)
+      res = calculateGrossFromNet(inputValue, status)
+      res.mode = 'netToGross'
+    } else if (method === 'taxToGross') {
+      // Input: Monthly Tax
       if (inputValue > 0) {
         const annualTax = inputValue * 12
         res = calculateGrossFromAnnualTax(annualTax, status)
+        res.mode = 'taxToGross'
       }
     }
 
@@ -70,7 +71,7 @@ function App() {
       <ResultCard
         result={result}
         mode={method}
-        inputTax={parseInt(incomeDisplay.replace(/\./g, '') || '0', 10)}
+        inputVal={parseInt(incomeDisplay.replace(/\./g, '') || '0', 10)}
         thrInput={parseInt(thrDisplay.replace(/\./g, '') || '0', 10)}
         bonusInput={parseInt(bonusDisplay.replace(/\./g, '') || '0', 10)}
       />

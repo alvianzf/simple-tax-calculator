@@ -21,9 +21,9 @@ const TaxForm = ({
   };
 
   const helpTexts = {
-    real: "Calculates actual annual tax burden (PPh 21 Pasal 17) averaged over 12 months. Most accurate for understanding your real tax cost. Includes THR and bonus in annual calculation.",
-    ter: "Reverse-calculates from your NET income (take-home pay) using TER 2024 tables to show gross income and tax withheld. Useful for understanding what your payslip means.",
-    reverse: "Input your desired monthly tax amount to find out what gross income would result in that tax. Useful for tax planning and salary negotiations."
+    real: "You know your Gross Salary, and want to know how much Tax (PPh 21) will be cut and what your Net Salary is.",
+    netToGross: "You know your Net Salary (Take Home Pay), and want to know what your Gross Salary implies and how much Tax is paid.",
+    taxToGross: "You see a specific Tax amount on your slip, and want to reverse-calculate what Gross Salary generates that tax."
   };
 
   return (
@@ -38,8 +38,8 @@ const TaxForm = ({
           style={{ position: 'relative' }}
         >
           <Calculator size={16} style={{ display: 'inline', marginRight: '4px' }} />
-          True Cost
-          <span style={{ display: 'block', fontSize: '0.7em', opacity: 0.8 }}>(Annualized)</span>
+          Gross → Net
+          <span style={{ display: 'block', fontSize: '0.7em', opacity: 0.8 }}>(True Cost)</span>
           {showHelp === 'real' && (
             <div className="tooltip-popup" style={{
               position: 'absolute',
@@ -63,16 +63,16 @@ const TaxForm = ({
           )}
         </button>
         <button
-          className={`switch-btn ${method === 'ter' ? 'active' : ''}`}
-          onClick={() => setMethod('ter')}
-          onMouseEnter={() => setShowHelp('ter')}
+          className={`switch-btn ${method === 'netToGross' ? 'active' : ''}`}
+          onClick={() => setMethod('netToGross')}
+          onMouseEnter={() => setShowHelp('netToGross')}
           onMouseLeave={() => setShowHelp(null)}
           style={{ position: 'relative' }}
         >
           <TrendingUp size={16} style={{ display: 'inline', marginRight: '4px' }} />
-          Payroll Slip
-          <span style={{ display: 'block', fontSize: '0.7em', opacity: 0.8 }}>(TER 2024)</span>
-          {showHelp === 'ter' && (
+          Net → Gross
+          <span style={{ display: 'block', fontSize: '0.7em', opacity: 0.8 }}>(Real Burden)</span>
+          {showHelp === 'netToGross' && (
             <div className="tooltip-popup" style={{
               position: 'absolute',
               top: '100%',
@@ -90,21 +90,21 @@ const TaxForm = ({
               textAlign: 'left',
               lineHeight: '1.4'
             }}>
-              {helpTexts.ter}
+              {helpTexts.netToGross}
             </div>
           )}
         </button>
         <button
-          className={`switch-btn ${method === 'reverse' ? 'active' : ''}`}
-          onClick={() => setMethod('reverse')}
-          onMouseEnter={() => setShowHelp('reverse')}
+          className={`switch-btn ${method === 'taxToGross' ? 'active' : ''}`}
+          onClick={() => setMethod('taxToGross')}
+          onMouseEnter={() => setShowHelp('taxToGross')}
           onMouseLeave={() => setShowHelp(null)}
           style={{ position: 'relative' }}
         >
           <ArrowLeftRight size={16} style={{ display: 'inline', marginRight: '4px' }} />
-          Reverse
-          <span style={{ display: 'block', fontSize: '0.7em', opacity: 0.8 }}>(Tax → Income)</span>
-          {showHelp === 'reverse' && (
+          Tax → Gross
+          <span style={{ display: 'block', fontSize: '0.7em', opacity: 0.8 }}>(Reverse Inc)</span>
+          {showHelp === 'taxToGross' && (
             <div className="tooltip-popup" style={{
               position: 'absolute',
               top: '100%',
@@ -122,7 +122,7 @@ const TaxForm = ({
               textAlign: 'left',
               lineHeight: '1.4'
             }}>
-              {helpTexts.reverse}
+              {helpTexts.taxToGross}
             </div>
           )}
         </button>
@@ -132,9 +132,9 @@ const TaxForm = ({
         <div className="form-group">
           <label>
             <Wallet size={16} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} />
-            {method === 'reverse' ? 'Desired Monthly Tax Paid' :
-              method === 'ter' ? 'Monthly NET Income (Take-Home)' :
-                'Monthly Gross Income'}
+            {method === 'taxToGross' ? 'Monthly Tax Paid' :
+              method === 'netToGross' ? 'Monthly Net Salary (Take Home Pay)' :
+                'Monthly Gross Salary'}
           </label>
           <div className="input-wrapper">
             <span className="currency-symbol">Rp</span>
@@ -148,8 +148,8 @@ const TaxForm = ({
           </div>
         </div>
 
-        {/* THR and Bonus Inputs (Only for True Cost and TER) */}
-        {(method === 'real' || method === 'ter') && (
+        {/* THR and Bonus Inputs (Only for True Cost / Gross -> Net) */}
+        {method === 'real' && (
           <>
             <div className="form-group" style={{ animation: 'fadeIn 0.5s' }}>
               <label>

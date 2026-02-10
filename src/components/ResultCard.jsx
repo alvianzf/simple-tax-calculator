@@ -98,32 +98,36 @@ const COMPARISONS = [
   }
 ];
 
-const ResultCard = ({ result, mode, inputTax, thrInput = 0, bonusInput = 0 }) => {
+const ResultCard = ({ result, mode, inputVal, thrInput = 0, bonusInput = 0 }) => {
   if (!result) return null;
   const [showDetails, setShowDetails] = useState(false);
 
   let monthly = 0;
   let annual = 0;
   let rate = 0;
-  let isReverse = mode === 'reverse';
-  let isTER = mode === 'ter';
+
+  const isNetToGross = mode === 'netToGross';
+  const isTaxToGross = mode === 'taxToGross';
+  const isReverse = isNetToGross || isTaxToGross;
 
   if (mode === 'real') {
     monthly = result.taxMonthly;
     annual = result.taxAnnual;
     rate = result.rateEffective;
-  } else if (mode === 'ter') {
-    // TER mode shows gross income (not tax)
+  } else if (isNetToGross) {
+    // Net to Gross: we want to show the Gross that was calculated
     monthly = result.grossMonthly;
-    annual = result.grossMonthly * 12;
-    rate = result.rate;
-  } else if (mode === 'reverse') {
+    annual = result.annualGross; // or result.grossMonthly * 12
+    rate = result.rateEffective;
+  } else if (isTaxToGross) {
+    // Tax to Gross: we want to show the Gross that was calculated
     monthly = result.monthlyGross;
     annual = result.annualGross;
-    rate = (inputTax * 12) / result.annualGross;
+    rate = (inputVal * 12) / result.annualGross;
   }
 
-  const taxForSarcasm = isTER ? result.tax : (isReverse ? inputTax : monthly);
+  // Sarcasm triggers based on the TAX amount
+  const taxForSarcasm = isReverse ? result.taxMonthly : monthly;
   const sarcasticComment = useMemo(() => getSarcasticComment(taxForSarcasm), [taxForSarcasm]);
 
   const hasLayers = result.layers && result.layers.length > 0;
@@ -197,17 +201,17 @@ const ResultCard = ({ result, mode, inputTax, thrInput = 0, bonusInput = 0 }) =>
         </div>
       )}
 
-      {isTER ? (
-        // TER Mode: Show Gross, Tax, Net breakdown
+      {isReverse ? (
+        // Reverse Modes: Show Gross, Tax, Net breakdown
         <>
           <div className="result-grid-3" style={{ marginBottom: '1.5rem' }}>
             <div style={{ background: 'var(--bg-input)', padding: '1rem', borderRadius: '0.75rem', textAlign: 'center' }}>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>
                 <Calendar size={14} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle' }} />
-                Required Gross
+                Calculated Gross
               </div>
               <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                {formatCurrency(result.grossMonthly)}
+                {formatCurrency(result.grossMonthly || result.monthlyGross)}
               </div>
             </div>
             <div style={{ background: 'var(--bg-input)', padding: '1rem', borderRadius: '0.75rem', textAlign: 'center' }}>
@@ -216,19 +220,20 @@ const ResultCard = ({ result, mode, inputTax, thrInput = 0, bonusInput = 0 }) =>
                 Tax Withheld
               </div>
               <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--brand-red)' }}>
-                {formatCurrency(result.tax)}
+                {formatCurrency(result.taxMonthly)}
               </div>
             </div>
             <div style={{ background: 'var(--bg-input)', padding: '1rem', borderRadius: '0.75rem', textAlign: 'center' }}>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>
                 <Calendar size={14} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle' }} />
-                Your Take-Home
+                {isNetToGross ? 'Your Target Net' : 'Resulting Net'}
               </div>
               <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#22c55e' }}>
-                {formatCurrency(result.netMonthly)}
+                {formatCurrency((result.grossMonthly || result.monthlyGross) - result.taxMonthly)}
               </div>
             </div>
           </div>
+
           {(result.thrGross > 0 || result.bonusGross > 0) && (
             <div style={{
               background: 'var(--bg-input)',
@@ -237,64 +242,19 @@ const ResultCard = ({ result, mode, inputTax, thrInput = 0, bonusInput = 0 }) =>
               marginBottom: '1rem',
               fontSize: '0.9rem'
             }}>
-              <div style={{ fontWeight: 600, marginBottom: '0.75rem', color: 'var(--text-primary)' }}>
-                Irregular Income Breakdown
-              </div>
-
-              {result.thrGross > 0 && (
-                <div style={{ marginBottom: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px dashed var(--border-color)' }}>
-                  <div style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>THR (Tunjangan Hari Raya)</div>
-                  <div className="breakdown-grid">
-                    <div>
-                      <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>Gross</div>
-                      <div style={{ fontWeight: 600 }}>{formatCurrency(result.thrGross)}</div>
-                    </div>
-                    <div>
-                      <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>Tax</div>
-                      <div style={{ fontWeight: 600, color: 'var(--brand-red)' }}>{formatCurrency(result.thrTax)}</div>
-                    </div>
-                    <div>
-                      <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>Take-Home</div>
-                      <div style={{ fontWeight: 600, color: '#22c55e' }}>{formatCurrency(result.thrTakeHome)}</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {result.bonusGross > 0 && (
-                <div style={{ marginBottom: '0.5rem' }}>
-                  <div style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Yearly Bonus</div>
-                  <div className="breakdown-grid">
-                    <div>
-                      <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>Gross</div>
-                      <div style={{ fontWeight: 600 }}>{formatCurrency(result.bonusGross)}</div>
-                    </div>
-                    <div>
-                      <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>Tax</div>
-                      <div style={{ fontWeight: 600, color: 'var(--brand-red)' }}>{formatCurrency(result.bonusTax)}</div>
-                    </div>
-                    <div>
-                      <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>Take-Home</div>
-                      <div style={{ fontWeight: 600, color: '#22c55e' }}>{formatCurrency(result.bonusTakeHome)}</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border-color)', fontWeight: 600, textAlign: 'center' }}>
-                Total Annual Tax: {formatCurrency(result.totalAnnualTax)}
-              </div>
+              {/* Irregular income block (omitted if logic removed from reverse modes) */}
+              {/* Note: In current implementation, reverse modes don't return these, so this won't render, which is correct. */}
             </div>
           )}
         </>
       ) : (
-        // Real Cost and Reverse Mode: Show Monthly/Annual
+        // Real Cost: Show Monthly/Annual Tax
         <>
           <div className="result-grid-2" style={{ marginBottom: '1.5rem' }}>
             <div style={{ background: 'var(--bg-input)', padding: '1rem', borderRadius: '0.75rem', textAlign: 'center' }}>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>
                 <Calendar size={14} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle' }} />
-                {isReverse ? 'Required Monthly Gross' : 'Monthly Tax'}
+                Monthly Tax
               </div>
               <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>
                 {formatCurrency(monthly)}
@@ -303,19 +263,13 @@ const ResultCard = ({ result, mode, inputTax, thrInput = 0, bonusInput = 0 }) =>
             <div style={{ background: 'var(--bg-input)', padding: '1rem', borderRadius: '0.75rem', textAlign: 'center' }}>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>
                 <Calendar size={14} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle' }} />
-                {isReverse ? 'Required Annual Gross' : 'Annual Tax'}
+                Annual Tax
               </div>
               <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>
                 {formatCurrency(annual)}
               </div>
             </div>
           </div>
-
-          {isReverse && (
-            <div style={{ textAlign: 'center', marginBottom: '1rem', color: 'var(--text-secondary)' }}>
-              To pay <span style={{ color: 'var(--brand-red)', fontWeight: 600 }}>{formatCurrency(inputTax)}</span> tax/month
-            </div>
-          )}
         </>
       )}
 
@@ -391,18 +345,14 @@ const ResultCard = ({ result, mode, inputTax, thrInput = 0, bonusInput = 0 }) =>
                 ))}
               </div>
 
-              {!isReverse && (
-                <>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '0.5rem', borderTop: '1px solid var(--border-color)' }}>
-                    <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Total Annual Tax</span>
-                    <span style={{ fontWeight: 600, color: 'var(--brand-red)' }}>{formatCurrency(result.taxAnnual)}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.25rem' }}>
-                    <span>÷ 12 Months</span>
-                    <span>{formatCurrency(result.taxMonthly)}</span>
-                  </div>
-                </>
-              )}
+              <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '0.5rem', borderTop: '1px solid var(--border-color)' }}>
+                <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Total Annual Tax</span>
+                <span style={{ fontWeight: 600, color: 'var(--brand-red)' }}>{formatCurrency(result.taxAnnual)}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.25rem' }}>
+                <span>÷ 12 Months</span>
+                <span>{formatCurrency(result.taxMonthly)}</span>
+              </div>
             </div>
           )}
         </div>

@@ -74,68 +74,46 @@ export function calculateRealMonthlyTax(grossMonthly, status, bonus = 0) {
 
 // --- REVERSE: Tax -> Income ---
 export function calculateGrossFromAnnualTax(targetTax, status) {
-    // We already have 'calculateGrossFromAnnualTax' but need to add 'layers' support
-    // Logic: Gross = (PKP + PTKP).
-    // The layers are derivative of PKP.
+    // 1. We know: Tax = (PKP * Rate) - Layer_Adjustments
+    // But since it's progressive, we need to find which bracket we end up in.
+    // Iterative approach is safest and easiest to maintain given the layers.
 
-    if (targetTax <= 0) {
-        return {
-            annualGross: 0, 
-            monthlyGross: 0,
-            pkp: 0,
-            ptkp: PTKP[status] || PTKP['TK/0'],
-            layers: [] // Added
-        };
-    }
-
-    let remainingTax = targetTax;
-    let calculatedPKP = 0;
-    const layers = []; // To track reconstruction
-
-    for (const tier of ARTICLE_17_RATES) {
-        if (remainingTax <= 0) break;
-
-        const previousLimit = ARTICLE_17_RATES[ARTICLE_17_RATES.indexOf(tier) - 1]?.limit || 0;
-        const currentLimit = tier.limit === Infinity ? Infinity : tier.limit;
-        const bracketSize = currentLimit - previousLimit;
+    // Cap iterations to prevent infinite loops in edge cases
+    let low = 0;
+    let high = targetTax * 20; // Rough upper bound estimate (5% lowest rate -> 20x tax)
+    let bestGross = 0;
+    
+    // Binary search for Gross that yields this Tax
+    for (let i = 0; i < 100; i++) {
+        const mid = Math.floor((low + high) / 2);
+        const result = calculateRealMonthlyTax(Math.floor(mid / 12), status);
         
-        const maxTaxForBracket = bracketSize === Infinity ? Infinity : Math.floor(bracketSize * tier.rate);
+        const calculatedTax = result.taxAnnual;
 
-        let taxInThisBracket = 0;
-        let incomeInThisBracket = 0;
-
-        if (remainingTax <= maxTaxForBracket) {
-            // Fits in this bracket
-            incomeInThisBracket = remainingTax / tier.rate;
-            taxInThisBracket = remainingTax;
-            
-            remainingTax = 0;
-        } else {
-            // Fills this bracket
-            incomeInThisBracket = bracketSize;
-            taxInThisBracket = maxTaxForBracket;
-            
-            remainingTax -= maxTaxForBracket;
+        if (Math.abs(calculatedTax - targetTax) < 1000) {
+            bestGross = result.annualGross;
+            break;
         }
 
-        calculatedPKP += incomeInThisBracket;
-        layers.push({
-            rate: tier.rate,
-            amount: Math.floor(incomeInThisBracket),
-            tax: Math.floor(taxInThisBracket)
-        });
+        if (calculatedTax < targetTax) {
+            low = mid + 1000;
+        } else {
+            high = mid - 1000;
+        }
+        bestGross = mid;
     }
 
-    const ptkp = PTKP[status] || PTKP['TK/0'];
-    const annualGross = calculatedPKP + ptkp;
-    const monthlyGross = Math.floor(annualGross / 12);
-
+    // Recalculate full details for the best match
+    const finalResult = calculateRealMonthlyTax(Math.floor(bestGross / 12), status);
+    
     return {
-        annualGross: Math.floor(annualGross),
-        monthlyGross: monthlyGross,
-        pkp: Math.floor(calculatedPKP),
-        ptkp: ptkp,
-        layers: layers
+        annualGross: finalResult.annualGross,
+        monthlyGross: Math.floor(finalResult.annualGross / 12),
+        pkp: finalResult.pkp,
+        ptkp: finalResult.ptkp,
+        layers: finalResult.layers,
+        taxAnnual: finalResult.taxAnnual,
+        taxMonthly: finalResult.taxMonthly
     };
 }
 
@@ -155,92 +133,55 @@ export function calculateTER(grossIncome, status) {
     return { tax, rate };
 }
 
-// --- TER: Reverse Calculation (Net Income -> Gross Income) ---
+// --- REVERSE: Net Income -> Gross Income (Real Tax Burden) ---
+export function calculateGrossFromNet(netMonthly, status) {
+    // Target: We want (Gross - Tax(Gross)) = Net
+    // Tax is calculated using calculateRealMonthlyTax (Annualized -> PTKP -> Progressive -> Divide 12)
+    // We will use binary search to find the Gross.
 
-export function calculateGrossFromNet(netIncome, status, thr = 0, bonus = 0) {
-    // Determine which TER table to use
-    const category = STATUS_CATEGORY_MAP[status] || 'A';
-    let table;
-    switch (category) {
-        case 'B': table = TER_B.length > 0 ? TER_B : TER_A; break;
-        case 'C': table = TER_C.length > 0 ? TER_C : TER_A; break;
-        default: table = TER_A;
+    let low = netMonthly; 
+    let high = netMonthly * 2; // Upper bound assumption
+    let bestGross = netMonthly;
+    
+    // refine upper bound if needed
+    while (true) {
+        const res = calculateRealMonthlyTax(high, status);
+        const net = high - res.taxMonthly;
+        if (net > netMonthly) break;
+        high *= 2;
+        if (high > 10000000000) break; // Safety break 10M
     }
-    
-    // Binary search approach to find gross income that results in target net income
-    // Net = Gross - Tax, so we need to find Gross where (Gross - TER(Gross)) = Net
-    
-    let low = netIncome; // Minimum possible gross
-    let high = netIncome * 2; // Maximum possible gross (assuming tax rate < 50%)
-    let bestGross = netIncome;
-    let iterations = 0;
-    const maxIterations = 50;
-    
-    while (low <= high && iterations < maxIterations) {
+
+    for (let i = 0; i < 50; i++) {
         const mid = Math.floor((low + high) / 2);
-        
-        // Calculate tax for this gross income
-        const tier = table.find(t => mid <= t.max);
-        const rate = tier ? tier.rate : 0;
-        const tax = Math.floor(mid * rate);
-        const calculatedNet = mid - tax;
-        
-        if (Math.abs(calculatedNet - netIncome) < 1000) {
-            // Close enough (within 1k)
+        const result = calculateRealMonthlyTax(mid, status);
+        const calculatedNet = mid - result.taxMonthly;
+
+        if (Math.abs(calculatedNet - netMonthly) < 1000) {
             bestGross = mid;
             break;
         }
-        
-        if (calculatedNet < netIncome) {
-            // Need higher gross
+
+        if (calculatedNet < netMonthly) {
             low = mid + 1000;
         } else {
-            // Need lower gross
             high = mid - 1000;
         }
-        
         bestGross = mid;
-        iterations++;
     }
-    
-    // Calculate final tax with the best gross found
-    const finalTier = table.find(t => bestGross <= t.max);
-    const finalRate = finalTier ? finalTier.rate : 0;
-    const finalTax = Math.floor(bestGross * finalRate);
-    const finalNet = bestGross - finalTax;
-    
-    // Handle THR and Bonus if provided
-    let thrTax = 0;
-    let thrTakeHome = 0;
-    let bonusTax = 0;
-    let bonusTakeHome = 0;
-    
-    if (thr > 0) {
-        const thrTier = table.find(t => thr <= t.max);
-        const thrRate = thrTier ? thrTier.rate : 0;
-        thrTax = Math.floor(thr * thrRate);
-        thrTakeHome = thr - thrTax;
-    }
-    
-    if (bonus > 0) {
-        const bonusTier = table.find(t => bonus <= t.max);
-        const bonusRate = bonusTier ? bonusTier.rate : 0;
-        bonusTax = Math.floor(bonus * bonusRate);
-        bonusTakeHome = bonus - bonusTax;
-    }
-    
+
+    const finalResult = calculateRealMonthlyTax(bestGross, status);
+
     return {
         grossMonthly: bestGross,
-        tax: finalTax,
-        netMonthly: finalNet,
-        rate: finalRate,
-        thrGross: thr,
-        thrTax,
-        thrTakeHome,
-        bonusGross: bonus,
-        bonusTax,
-        bonusTakeHome,
-        totalAnnualTax: (finalTax * 12) + thrTax + bonusTax
+        annualGross: finalResult.annualGross,
+        taxMonthly: finalResult.taxMonthly,
+        taxAnnual: finalResult.taxAnnual,
+        netMonthly: bestGross - finalResult.taxMonthly,
+        pkp: finalResult.pkp,
+        ptkp: finalResult.ptkp,
+        layers: finalResult.layers,
+        rateEffective: finalResult.rateEffective
     };
 }
 
