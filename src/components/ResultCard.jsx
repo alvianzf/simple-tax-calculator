@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { getSarcasticComment, formatCurrency } from '../utils/calculator';
+import { NO_THR_NO_BONUS_COMMENTS, NO_BONUS_COMMENTS } from '../utils/tax-data';
 import { ChevronDown, ChevronUp, Calendar, Percent } from 'lucide-react';
 
 const ResultCard = ({ result, mode, inputTax }) => {
