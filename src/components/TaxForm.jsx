@@ -1,4 +1,5 @@
 import React from 'react';
+import { Calculator, TrendingUp, ArrowLeftRight, Wallet, Gift, Users } from 'lucide-react';
 
 const TaxForm = ({
   method, setMethod,
@@ -26,6 +27,7 @@ const TaxForm = ({
           className={`switch-btn ${method === 'real' ? 'active' : ''}`}
           onClick={() => setMethod('real')}
         >
+          <Calculator size={16} style={{ display: 'inline', marginRight: '4px' }} />
           True Cost
           <span style={{ display: 'block', fontSize: '0.7em', opacity: 0.8 }}>(Annualized)</span>
         </button>
@@ -33,6 +35,7 @@ const TaxForm = ({
           className={`switch-btn ${method === 'ter' ? 'active' : ''}`}
           onClick={() => setMethod('ter')}
         >
+          <TrendingUp size={16} style={{ display: 'inline', marginRight: '4px' }} />
           Payroll Slip
           <span style={{ display: 'block', fontSize: '0.7em', opacity: 0.8 }}>(TER 2024)</span>
         </button>
@@ -40,6 +43,7 @@ const TaxForm = ({
           className={`switch-btn ${method === 'reverse' ? 'active' : ''}`}
           onClick={() => setMethod('reverse')}
         >
+          <ArrowLeftRight size={16} style={{ display: 'inline', marginRight: '4px' }} />
           Reverse
           <span style={{ display: 'block', fontSize: '0.7em', opacity: 0.8 }}>(Tax → Income)</span>
         </button>
@@ -48,6 +52,7 @@ const TaxForm = ({
       <div id="calculator-form">
         <div className="form-group">
           <label>
+            <Wallet size={16} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} />
             {method === 'reverse' ? 'Desired Monthly Tax Paid' : 'Monthly Gross Income'}
           </label>
           <div className="input-wrapper">
@@ -66,7 +71,10 @@ const TaxForm = ({
         {method === 'real' && (
           <>
             <div className="form-group" style={{ animation: 'fadeIn 0.5s' }}>
-              <label>THR (Tunjangan Hari Raya)</label>
+              <label>
+                <Gift size={16} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} />
+                THR (Tunjangan Hari Raya)
+              </label>
               <div className="input-wrapper">
                 <span className="currency-symbol">Rp</span>
                 <input
@@ -79,7 +87,10 @@ const TaxForm = ({
               </div>
             </div>
             <div className="form-group" style={{ animation: 'fadeIn 0.5s' }}>
-              <label>Yearly Bonus (Optional)</label>
+              <label>
+                <Gift size={16} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} />
+                Yearly Bonus (Optional)
+              </label>
               <div className="input-wrapper">
                 <span className="currency-symbol">Rp</span>
                 <input
@@ -96,7 +107,10 @@ const TaxForm = ({
 
         <div className="options-grid">
           <div className="form-group">
-            <label>Marital Status</label>
+            <label>
+              <Users size={16} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} />
+              Marital Status
+            </label>
             <select value={status} onChange={(e) => setStatus(e.target.value)}>
               <option value="TK/0">TK/0 (Single, 0 Dep)</option>
               <option value="TK/1">TK/1 (Single, 1 Dep)</option>

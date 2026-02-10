@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { getSarcasticComment, formatCurrency } from '../utils/calculator';
+import { ChevronDown, ChevronUp, Calendar, Percent } from 'lucide-react';
 
 const ResultCard = ({ result, mode, inputTax }) => {
   if (!result) return null;
@@ -24,12 +25,9 @@ const ResultCard = ({ result, mode, inputTax }) => {
     rate = (inputTax * 12) / result.annualGross;
   }
 
-  // Determine tax amount for sarcasm
   const taxForSarcasm = isReverse ? inputTax : monthly;
   const sarcasticComment = getSarcasticComment(taxForSarcasm);
 
-  // Can we show breakdown?
-  // 'real' mode has layers. 'reverse' mode now has layers too.
   const hasLayers = result.layers && result.layers.length > 0;
 
   return (
@@ -37,6 +35,7 @@ const ResultCard = ({ result, mode, inputTax }) => {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
         <div style={{ background: 'var(--bg-input)', padding: '1rem', borderRadius: '0.75rem', textAlign: 'center' }}>
           <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>
+            <Calendar size={14} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle' }} />
             {isReverse ? 'Required Monthly Gross' : 'Monthly Tax'}
           </div>
           <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>
@@ -45,6 +44,7 @@ const ResultCard = ({ result, mode, inputTax }) => {
         </div>
         <div style={{ background: 'var(--bg-input)', padding: '1rem', borderRadius: '0.75rem', textAlign: 'center' }}>
           <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>
+            <Calendar size={14} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle' }} />
             {isReverse ? 'Required Annual Gross' : 'Annual Tax'}
           </div>
           <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>
@@ -60,6 +60,7 @@ const ResultCard = ({ result, mode, inputTax }) => {
       )}
 
       <div className="result-rate">
+        <Percent size={14} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle' }} />
         Effective Rate: {(rate * 100 || 0).toFixed(2)}%
       </div>
 
@@ -77,6 +78,7 @@ const ResultCard = ({ result, mode, inputTax }) => {
               display: 'flex', alignItems: 'center', gap: '0.5rem'
             }}
           >
+            {showDetails ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
             {showDetails ? 'Choose Ignorance (Hide Details)' : 'How did we get here? (Show Details)'}
           </button>
 
@@ -105,7 +107,6 @@ const ResultCard = ({ result, mode, inputTax }) => {
                 ))}
               </div>
 
-              {/* Total Summary */}
               {!isReverse && (
                 <>
                   <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '0.5rem', borderTop: '1px solid var(--border-color)' }}>
