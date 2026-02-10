@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Header from './components/Header'
 import TaxForm from './components/TaxForm'
 import ResultCard from './components/ResultCard'
+import Footer from './components/Footer'
 import { calculateRealMonthlyTax, calculateTER, calculateGrossFromNet, calculateGrossFromAnnualTax } from './utils/calculator'
 import './App.css'
 
@@ -71,6 +72,8 @@ function App() {
         mode={method}
         inputTax={parseInt(incomeDisplay.replace(/\./g, '') || '0', 10)}
       />
+
+      <Footer />
     </div>
   )
 }
