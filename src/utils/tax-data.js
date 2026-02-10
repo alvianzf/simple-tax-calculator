@@ -130,8 +130,8 @@ export const SARCASTIC_COMMENTS = [
     { 
         threshold: 7500000, 
         variations: [
-            "7.5 Million. At this point, you should demand a reserved parking spot at the Tax Office.",
-            "7.5M. You're paying for a government car's monthly fuel. Hope they drive carefully.",
+            "{amount} in monthly tax. At this point, you should demand a reserved parking spot at the Tax Office.",
+            "{amount}. You're paying for a government car's monthly fuel. Hope they drive carefully.",
             "This could fund a small government project. Like, painting a fence. A short fence.",
             "You're basically sponsoring a mid-level manager. Do you get naming rights?"
         ]
@@ -139,10 +139,10 @@ export const SARCASTIC_COMMENTS = [
     { 
         threshold: 10000000, 
         variations: [
-            "10 Million. Digimons Digivolve, you just evolved into 'Cash Cow'. Moo.",
-            "10M. You've entered the double-digit millions club. Your prize? More taxes next year.",
+            "{amount}. Digimons Digivolve, you just evolved into 'Cash Cow'. Moo.",
+            "{amount}. You've entered the double-digit millions club. Your prize? More taxes next year.",
             "This is a government section head's salary. You're basically running a department now.",
-            "Ten million. You could buy a used car every month. Or fund infrastructure. Tough choice."
+            "{amount} in monthly tax. You could buy a used car every month. Or fund infrastructure. Tough choice."
         ]
     },
     { 
@@ -211,7 +211,7 @@ export const SARCASTIC_COMMENTS = [
     { 
         threshold: 500000000, 
         variations: [
-            "500 Million. Please adopt me.",
+            "{amount} in monthly tax. Please adopt me.",
             "Half a billion. You're not paying taxes. You're funding a small town.",
             "This is 'I have an accountant' territory. Multiple accountants. And a lawyer.",
             "You could retire three generations of your family. But you chose to work. Interesting."
@@ -220,7 +220,7 @@ export const SARCASTIC_COMMENTS = [
     { 
         threshold: 1000000000, 
         variations: [
-            "1 Billion. You are the economy. Just stop working, let's see what happens.",
+            "{amount}. You are the economy. Just stop working, let's see what happens.",
             "A billion. At this point, the government should name a bridge after you.",
             "This is 'I'm in the Forbes list' money. Except it's going to the government. Not you.",
             "You're not a taxpayer. You're a national asset. Act accordingly."
