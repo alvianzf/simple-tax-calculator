@@ -2,6 +2,7 @@
   width: 100%;
   max-width: 600px;
   margin: 0 auto;
+  overflow-x: hidden;
 }
 
 /* Header */
@@ -152,6 +153,8 @@ select:focus {
   font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 0.5rem;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .result-rate {
